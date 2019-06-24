@@ -1,6 +1,6 @@
 /*
  * unity-websocket-webgl
- *
+ * 
  * @author Jiri Hybek <jiri@hybek.cz>
  * @copyright 2018 Jiri Hybek <jiri@hybek.cz>
  * @license Apache 2.0 - See LICENSE file distributed with this source code.
@@ -10,7 +10,7 @@ var LibraryWebSocket = {
 	$webSocketState: {
 		/*
 		 * Map of instances
-		 *
+		 * 
 		 * Instance structure:
 		 * {
 		 * 	url: string,
@@ -34,7 +34,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Set onOpen callback
-	 *
+	 * 
 	 * @param callback Reference to C# static function
 	 */
 	WebSocketSetOnOpen: function(callback) {
@@ -45,7 +45,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Set onMessage callback
-	 *
+	 * 
 	 * @param callback Reference to C# static function
 	 */
 	WebSocketSetOnMessage: function(callback) {
@@ -56,7 +56,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Set onError callback
-	 *
+	 * 
 	 * @param callback Reference to C# static function
 	 */
 	WebSocketSetOnError: function(callback) {
@@ -67,7 +67,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Set onClose callback
-	 *
+	 * 
 	 * @param callback Reference to C# static function
 	 */
 	WebSocketSetOnClose: function(callback) {
@@ -78,7 +78,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Allocate new WebSocket instance struct
-	 *
+	 * 
 	 * @param url Server URL
 	 */
 	WebSocketAllocate: function(url) {
@@ -97,10 +97,10 @@ var LibraryWebSocket = {
 
 	/**
 	 * Remove reference to WebSocket instance
-	 *
+	 * 
 	 * If socket is not closed function will close it but onClose event will not be emitted because
 	 * this function should be invoked by C# WebSocket destructor.
-	 *
+	 * 
 	 * @param instanceId Instance ID
 	 */
 	WebSocketFree: function(instanceId) {
@@ -122,7 +122,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Connect WebSocket to the server
-	 *
+	 * 
 	 * @param instanceId Instance ID
 	 */
 	WebSocketConnect: function(instanceId) {
@@ -158,7 +158,7 @@ var LibraryWebSocket = {
 			if (ev.data instanceof ArrayBuffer) {
 
 				var dataBuffer = new Uint8Array(ev.data);
-
+				
 				var buffer = _malloc(dataBuffer.length);
 				HEAPU8.set(dataBuffer, buffer);
 
@@ -173,12 +173,12 @@ var LibraryWebSocket = {
 		};
 
 		instance.ws.onerror = function(ev) {
-
+			
 			if (webSocketState.debug)
 				console.log("[JSLIB WebSocket] Error occured.");
 
 			if (webSocketState.onError) {
-
+				
 				var msg = "WebSocket error.";
 				var msgBytes = lengthBytesUTF8(msg);
 				var msgBuffer = _malloc(msgBytes + 1);
@@ -212,7 +212,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Close WebSocket connection
-	 *
+	 * 
 	 * @param instanceId Instance ID
 	 * @param code Close status code
 	 * @param reasonPtr Pointer to reason string
@@ -232,7 +232,7 @@ var LibraryWebSocket = {
 			return -5;
 
 		var reason = ( reasonPtr ? Pointer_stringify(reasonPtr) : undefined );
-
+		
 		try {
 			instance.ws.close(code, reason);
 		} catch(err) {
@@ -245,17 +245,17 @@ var LibraryWebSocket = {
 
 	/**
 	 * Send message over WebSocket
-	 *
+	 * 
 	 * @param instanceId Instance ID
 	 * @param bufferPtr Pointer to the message buffer
 	 * @param length Length of the message in the buffer
 	 */
 	WebSocketSend: function(instanceId, bufferPtr, length) {
-
+	
 		var instance = webSocketState.instances[instanceId];
 		if (!instance) return -1;
 		
-		if (!instance.ws)
+		if (instance.ws === null)
 			return -3;
 
 		if (instance.ws.readyState !== 1)
@@ -269,7 +269,7 @@ var LibraryWebSocket = {
 
 	/**
 	 * Return WebSocket readyState
-	 *
+	 * 
 	 * @param instanceId Instance ID
 	 */
 	WebSocketGetState: function(instanceId) {

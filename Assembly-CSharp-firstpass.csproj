@@ -9,10 +9,10 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{14AE2188-3A57-E371-0239-18828834267F}</ProjectGuid>
+    <ProjectGuid>{1EC01DA9-BEE9-D0E5-7662-9D30F68CAEEC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <AssemblyName>Assembly-CSharp-firstpass</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <BaseDirectory>.</BaseDirectory>
@@ -53,15 +53,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\Interface\ChatInputSubmit.cs" />
-     <Compile Include="Assets\Scripts\Interface\ChatMessageInput.cs" />
-     <Compile Include="Assets\Scripts\Interface\ChatWindowManager.cs" />
-     <Compile Include="Assets\Scripts\Interface\LoadingAnimation.cs" />
-     <Compile Include="Assets\Scripts\Interface\Log.cs" />
-     <Compile Include="Assets\Scripts\Interface\UIButtonFunctions.cs" />
-     <Compile Include="Assets\Scripts\Networking\ConnectionManager.cs" />
-     <Compile Include="Assets\Scripts\Networking\PacketSender.cs" />
-     <Compile Include="Assets\Scripts\Networking\PacketTypes.cs" />
+     <Compile Include="Assets\Plugins\WebSocket.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/lauri/Desktop/mmo-client-2.0/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
@@ -665,12 +657,6 @@
  <Reference Include="Boo.Lang">
  <HintPath>C:/Program Files/2019.3.0a5/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
  </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
-      <Project>{1EC01DA9-BEE9-D0E5-7662-9D30F68CAEEC}</Project>
-      <Name>Assembly-CSharp-firstpass</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

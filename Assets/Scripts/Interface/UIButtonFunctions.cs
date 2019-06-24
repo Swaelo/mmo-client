@@ -1,26 +1,22 @@
-﻿using System.Text;
-using System.Collections;
-using System.Collections.Generic;
+﻿// ================================================================================================================================
+// File:        UIButtonFunctions.cs
+// Description: Defines event functions triggered from UI buttons being interacted with
+// ================================================================================================================================
+
+using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class UIButtonFunctions : MonoBehaviour
 {
-    public void ClickConnectButton()
-    {
-        string ServerAddress = GameObject.Find("Server Address Input Field").GetComponent<InputField>().text;
-        Log.Chat("Connecting to: " + ServerAddress + "...");
-        ConnectionManager ServerConnection = GameObject.Find("System").GetComponent<ConnectionManager>();
-        ServerConnection.InitializeWebSocket(ServerAddress);
-        ServerConnection.TryConnect();
-    }
+    static ConnectionManager ServerConnection = null;
+    EventSystem EventManager = null;
+    InputField ChatNameInput = null;
+    InputField ChatMessageInput = null;
 
-    public void SendServerMessage()
+    public void ConnectServer()
     {
-        string ServerMessage = GameObject.Find("Server Message Input Field").GetComponent<InputField>().text;
-        ConnectionManager ServerConnection = GameObject.Find("System").GetComponent<ConnectionManager>();
-        byte[] ServerMessageData = Encoding.UTF8.GetBytes(ServerMessage);
-        Log.Chat("To server: " + ServerMessage, ServerMessageData);
-        ServerConnection.SendMessage(ServerMessage);
+        ConnectionManager.Instance.TryConnect();
     }
 }
