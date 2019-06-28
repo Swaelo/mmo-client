@@ -53,13 +53,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\Interface\ChatInputSubmit.cs" />
      <Compile Include="Assets\Scripts\Interface\ChatMessageInput.cs" />
      <Compile Include="Assets\Scripts\Interface\ChatWindowManager.cs" />
+     <Compile Include="Assets\Scripts\Interface\InterfaceManager.cs" />
      <Compile Include="Assets\Scripts\Interface\LoadingAnimation.cs" />
      <Compile Include="Assets\Scripts\Interface\Log.cs" />
      <Compile Include="Assets\Scripts\Interface\UIButtonFunctions.cs" />
      <Compile Include="Assets\Scripts\Networking\ConnectionManager.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandler.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandlers\AccountLoginReplyHandler.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandlers\AccountRegisterReplyHandler.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandlers\CharacterDataReplyHandler.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandlers\ChatMessageHandler.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandlers\CreateCharacterReplyHandler.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketSender.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketTypes.cs" />
  <Reference Include="Unity.Timeline.Editor">

@@ -1,9 +1,9 @@
 ﻿// ================================================================================================================================
 // File:        ChatWindowManager.cs
 // Description: Displays messages to the chat window interface
+// Author:      Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 

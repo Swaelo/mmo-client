@@ -1,6 +1,7 @@
 ﻿// ================================================================================================================================
 // File:        LoadingAnimation.cs
 // Description: Changes colors of the letters on the UI just to show something happening while waiting for the game to load/connect
+// Author:      Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
 using UnityEngine;
