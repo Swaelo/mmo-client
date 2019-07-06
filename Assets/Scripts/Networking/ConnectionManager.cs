@@ -12,9 +12,7 @@ public class ConnectionManager : MonoBehaviour
 {
     //Singleton object
     public static ConnectionManager Instance = null;
-
-    //Store a list of packets queued up to be sent out to the server in the next communication interval
-    public PacketQueue PacketQueue = null;
+    void Awake() { Instance = this; }
 
     //Server connection status
     private string ServerIP = "ws://203.221.43.175:5500";
@@ -37,13 +35,12 @@ public class ConnectionManager : MonoBehaviour
     private int FailedConnectionAttempts = 0;       //The client will stop trying to connect after 5 failed attempts
     private int ConnectionAttemptLimit = 3;         //How many times the client will try connecting to the server before it gives up
 
-    void Awake()
-    {
-        //Assign our singleton class instance
-        Instance = this;
-        //Initialize our outgoing network packet queue
-        PacketQueue = new PacketQueue();
-    }
+    //Account information once an account has been logged in to
+    public string AccountName = "";
+    public string FirstCharacterName = "";
+    public string SecondCharacterName = "";
+    public string ThirdCharacterName = "";
+    public string SelectedCharacter = "";
 
     void Start()
     {
@@ -98,67 +95,40 @@ public class ConnectionManager : MonoBehaviour
         if(TryingToConnect)
             TryConnecting();
         
-        //Check when a new connection to the server has just been opened it needs to be setup
+        //Check if a new connection to the server has just been opened
         if(ConnectionEstablished && !IsConnected)
-            SetupNewConnection();
+        {
+            //Announce the new connection to the chat and hide the connecting animation object
+            Log.Chat("Connected!");
+            InterfaceManager.Instance.SetObjectActive("Connecting Animation", false);
+            IsConnected = true;
+            //Enable the main menu panel
+            InterfaceManager.Instance.SetObjectActive("Main Menu Panel", true);
+        }
 
-        //Handles any WebSocket events that occur while connected to the game server
-        HandleEvents();
-
-        //Update the PacketQueue so it will automatically transmit all queued network packets in set intervals
-        PacketQueue.UpdateQueue();
-    }
-
-    //Handles any WebSocket events that occur while connected to the game server
-    private void HandleEvents()
-    {
+        //Handle new messages whenever they are received from the game server
         if(MessageReceived)
-            HandleMessage();
+        {
+            //Pass the message onto the packet handler so the correct handler function can be used
+            PacketHandler.Instance.ReadClientPacket(Encoding.ASCII.GetString(ServerMessage));
+            MessageReceived = false;
+        }
+
+        //Handle connection errors when they occur
         if(ConnectionError)
-            HandleConnectionError();
+        {
+            Debug.Log("Connection Error: " + ErrorMessage);
+            ConnectionError = false;
+            IsConnected = false;
+        }
+
+        //Handle when the network connection has been closed
         if(ConnectionClosed)
-            HandleClosedConnection();
-    }
-
-    //Handles messages received from the game server
-    private void HandleMessage()
-    {
-        //Convert the packet data to string format
-        string PacketData = Encoding.ASCII.GetString(ServerMessage);
-
-        //Pass the data onto the packet handler so it can read each section of the data, passing each onto the correct handler function
-        PacketHandler.Instance.ReadServerPacket(PacketData);
-
-        //The message has now been handled
-        ServerMessage = null;
-        MessageReceived = false;
-    }
-
-    //Handles connection errors when they occur
-    private void HandleConnectionError()
-    {
-        Debug.Log("Connection Error: " + ErrorMessage);
-        ConnectionError = false;
-        IsConnected = false;
-    }
-
-    //Handles when the connection with the game server has been shut down
-    private void HandleClosedConnection()
-    {
-        Debug.Log("Connection Closed: " + CloseCode);
-        ConnectionClosed = false;
-        IsConnected = false;
-    }
-
-    //Sets up the connection to the server once it has first been opened
-    private void SetupNewConnection()
-    {
-        //Announce the new connection to the chat and hide the connecting animation object
-        Log.Chat("Connected!");
-        InterfaceManager.Instance.SetObjectActive("Connecting Animation", false);
-        IsConnected = true;
-        //Enable the main menu panel
-        InterfaceManager.Instance.SetObjectActive("Main Menu Panel", true);
+        {
+            Debug.Log("Connection Closed: " + CloseCode);
+            ConnectionClosed = false;
+            IsConnected = false;
+        }
     }
 
     //Keeps trying to establish a connection with the game server
@@ -174,8 +144,6 @@ public class ConnectionManager : MonoBehaviour
             ConnectionTimeoutRemaining = ConnectionTimeoutLimit;
             //Increase the failed attempts counter
             FailedConnectionAttempts++;
-            //End the current connection attempt
-            ServerConnection.Close();
             //If we have reached the connection attempt limit then we will no longer keep trying
             if(FailedConnectionAttempts == ConnectionAttemptLimit)
             {

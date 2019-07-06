@@ -5,6 +5,7 @@
 // ================================================================================================================================
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ChatMessageInput : MonoBehaviour
 {

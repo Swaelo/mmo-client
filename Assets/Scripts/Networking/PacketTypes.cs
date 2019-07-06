@@ -4,7 +4,7 @@
 // Author:      Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
-public enum ClientPacketType
+public enum ClientPacketTypes
 {
     AccountRegistrationRequest = 1,
         AccountLoginRequest = 2,
@@ -38,11 +38,10 @@ public enum ClientPacketType
         PlayerMoveAbility = 28,
         PlayerDropAbility = 29,
 
-        AccountLogoutAlert = 30,
-        StillAlive = 31
+        AccountLogoutAlert = 30
 };
 
-public enum ServerPacketType
+public enum ServerPacketTypes
 {
     AccountRegistrationReply = 1,
         AccountLoginReply = 2,

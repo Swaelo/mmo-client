@@ -4,6 +4,8 @@
 // Author:	    Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InterfaceManager : MonoBehaviour

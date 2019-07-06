@@ -4,6 +4,8 @@
 // Author:	    Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,52 +15,30 @@ public class PacketHandler : MonoBehaviour
     public static PacketHandler Instance = null;
 
     //Packet handler functions each mapped to their packet type number
-    public delegate void Packet(ref NetworkPacket Packet);
-    public Dictionary<ServerPacketType, Packet> PacketHandlers;
+    public delegate void Packet(string PacketData);
+    public Dictionary<int, Packet> PacketHandlers;
 
     private void Awake()
     {
         //Assign the singleton class instance
         Instance = this;
 
-        //Create a new dictionary to store all the packet handler functions
-        PacketHandlers = new Dictionary<ServerPacketType, Packet>();
-
-        //Map all the account management packet handlers into the dictionary
-        PacketHandlers.Add(ServerPacketType.AccountLoginReply, AccountManagementPacketHandler.HandleAccountLoginReply);
-        PacketHandlers.Add(ServerPacketType.AccountRegistrationReply, AccountManagementPacketHandler.HandleAccountRegisterReply);
-        PacketHandlers.Add(ServerPacketType.CharacterDataReply, AccountManagementPacketHandler.HandleCharacterDataReply);
-        PacketHandlers.Add(ServerPacketType.CharacterCreationReply, AccountManagementPacketHandler.HandleCreateCharacterReply);
-
-        //Map all the game world state packet handlers into the dictionary
-        PacketHandlers.Add(ServerPacketType.ActivePlayerList, GameWorldStatePacketHandler.HandleActivePlayerList);
-        PacketHandlers.Add(ServerPacketType.ActiveEntityList, GameWorldStatePacketHandler.HandleActiveEntityList);
-        PacketHandlers.Add(ServerPacketType.ActiveItemList, GameWorldStatePacketHandler.HandleActiveItemList);
-        PacketHandlers.Add(ServerPacketType.PlayerInventoryItems, GameWorldStatePacketHandler.HandleInventoryContents);
-        PacketHandlers.Add(ServerPacketType.PlayerEquipmentItems, GameWorldStatePacketHandler.HandleEquipmentContents);
-        PacketHandlers.Add(ServerPacketType.PlayerActionBarAbilities, GameWorldStatePacketHandler.HandleActionBarContents);
-
-        //Map all the player management packet handlers into the dictionary
-        PacketHandlers.Add(ServerPacketType.PlayerUpdate, PlayerManagementPacketHandler.HandlePlayerUpdate);
-        PacketHandlers.Add(ServerPacketType.SpawnPlayer, PlayerManagementPacketHandler.HandleSpawnPlayer);
-        PacketHandlers.Add(ServerPacketType.RemovePlayer, PlayerManagementPacketHandler.HandleRemovePlayer);
+        //Register all of the packet handler functions into the dictionary
+        PacketHandlers = new Dictionary<int, Packet>();
+        PacketHandlers.Add((int)ServerPacketTypes.AccountLoginReply, AccountLoginReplyHandler.HandleAccountLoginReply);
+        PacketHandlers.Add((int)ServerPacketTypes.AccountRegistrationReply, AccountRegisterReplyHandler.HandleAccountRegisterReply);
+        PacketHandlers.Add((int)ServerPacketTypes.CharacterDataReply, CharacterDataReplyHandler.HandleCharacterDataReply);
     }
 
     //Reads in a packet sent from the server and passes it onto whatever handle function that packet type is mapped onto
-    public void ReadServerPacket(string PacketMessage)
+    public void ReadClientPacket(string PacketData)
     {
-        //Create a new NetworkPacket object to store the string value that was received from the game server
-        NetworkPacket NewPacket = new NetworkPacket(PacketMessage);
+        //First open up the packet and find out what type it is
+        string PacketTypeString = PacketData.Substring(0, PacketData.IndexOf(' '));
+        int PacketType = Int32.Parse(PacketTypeString);
 
-        //Loop through all of the data in this net packet, passing each section of instructions on to their registered handler function
-        while(!NewPacket.FinishedReading())
-        {
-            //Read the next packet type value from the remaining packet data
-            ServerPacketType PacketType = NewPacket.ReadType();
-
-            //Use this enum value to invoke the packet handler function that is registered to this packet type
-            if(PacketHandlers.TryGetValue(PacketType, out Packet Packet))
-                Packet.Invoke(ref NewPacket);
-        }
+        //Invoke the matching handler function
+        if(PacketHandlers.TryGetValue(PacketType, out Packet Packet))
+            Packet.Invoke(PacketData);
     }
 }
