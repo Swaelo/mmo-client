@@ -5,15 +5,16 @@
 // ================================================================================================================================
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public static class Log
 {
-    public static void Chat(string Message)
+    public static void Chat(string Message, bool PrintConsole = false)
     {
         ChatWindowManager.Instance.DisplayMessage(Message);
+        
+        if(PrintConsole)
+            Debug.Log(Message);
     }
 
     public static void Chat(string Message, byte[] Data)

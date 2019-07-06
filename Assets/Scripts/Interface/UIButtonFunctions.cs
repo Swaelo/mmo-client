@@ -5,7 +5,6 @@
 // ================================================================================================================================
 
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class UIButtonFunctions : MonoBehaviour
@@ -41,7 +40,7 @@ public class UIButtonFunctions : MonoBehaviour
         }
 
         //If the input looks good, send it off to the game server as part of a login request
-        PacketSender.Instance.SendLoginRequest(Username, Password);
+        AccountManagementPacketSender.Instance.SendLoginRequest(Username, Password);
 
         //Disable the account login UI and enable the logging in waiting animation panel
         InterfaceManager.Instance.SetObjectActive("Account Login Panel", false);
@@ -74,7 +73,7 @@ public class UIButtonFunctions : MonoBehaviour
         //Otherwise we need to move onto the registering animation and send the request to the game server
         InterfaceManager.Instance.SetObjectActive("Account Register Panel", false);
         InterfaceManager.Instance.SetObjectActive("Registering Panel", true);
-        PacketSender.Instance.SendRegisterRequest(Username, Password);
+        AccountManagementPacketSender.Instance.SendRegisterRequest(Username, Password);
     }
 
     //Returns from the account registration panel back to the main menu panel
@@ -85,36 +84,28 @@ public class UIButtonFunctions : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Account Register Panel", false);
     }
 
-    //Selects the first character slot from the character select screen
-    public void CharacterSelectFirstChoiceButton()
+    //Selects the clicked character slot from the character select screen
+    public void CharacterSelectButton(int CharacterSlot)
     {
-        Log.Chat("first character slot selected");
+        //Store which character they tried to select
+        GameState.Instance.SelectedCharacter = CharacterSlot;
 
-        //If no first character exists then go to the character creation screen
-        if(ConnectionManager.Instance.FirstCharacterName == "")
+        //If no character exists in this slot then go to the character creation screen
+        if(GameState.Instance.CharacterNames[CharacterSlot-1] == "")
         {
             InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
             InterfaceManager.Instance.SetObjectActive("Character Create Panel", true);
         }
-        //Otherwise select that character and start playing the game with them
+        //Otherwise we want to select that character and start playing the game with them
         else
         {
             InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
-            ConnectionManager.Instance.SelectedCharacter = ConnectionManager.Instance.FirstCharacterName;
-            PacketSender.Instance.SendEnterWorldRequest(ConnectionManager.Instance.SelectedCharacter);
+            InterfaceManager.Instance.SetObjectActive("Entering World Panel", true);
+            GameState.Instance.CurrentCharacterName = GameState.Instance.CharacterNames[CharacterSlot-1];
+            GameState.Instance.CurrentCharacterPosition = GameState.Instance.CharacterPositions[CharacterSlot-1];
+            GameWorldStatePacketSender.Instance.SendEnterWorldAlert(GameState.Instance.CurrentCharacterName);
+            //We will wait in the entering world panel until we have finished recieving and processing all the game world state data from the server
         }
-    }
-
-    //Selects the second character slot from the character select screen
-    public void CharacterSelectSecondChoiceButton()
-    {
-        Log.Chat("second character slot selected");
-    }
-
-    //Selects the third character slot from the character select screen
-    public void CharacterSelectThirdChoiceButton()
-    {
-        Log.Chat("third character slot selected");
     }
 
     //Logouts from the users account while in the character select screen, returning to the login screen
@@ -124,7 +115,7 @@ public class UIButtonFunctions : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
         InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
         //Let the server know we have logged out of this account
-        PacketSender.Instance.SendLogoutAlert();
+        AccountManagementPacketSender.Instance.SendLogoutAlert();
     }
 
     //Sends a request to the server to create a new player character
@@ -137,7 +128,7 @@ public class UIButtonFunctions : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Character Create Panel", false);
         InterfaceManager.Instance.SetObjectActive("Creating Character Panel", true);
         //Let the server know we want to create this new player character
-        PacketSender.Instance.SendCreateCharacterRequest(CharacterName);
+        AccountManagementPacketSender.Instance.SendCreateCharacterRequest(CharacterName);
     }
 
     //Exits the character creation screen and returns to the character select screen
