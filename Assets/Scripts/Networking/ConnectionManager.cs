@@ -31,11 +31,9 @@ public class ConnectionManager : MonoBehaviour
     static bool ConnectionClosed = false;   //Set when we are finished communicating with the server and the connection is closed
     static string CloseCode = "";   //Set when the connection to the server is shut down    
 
-    //Connection attempt timeout
-    private float ConnectionTimeoutLimit = 3.0f;    //How long to wait before retrying the the server connection
-    private float ConnectionTimeoutRemaining;       //How long left for the current server connection attempt
-    private int FailedConnectionAttempts = 0;       //The client will stop trying to connect after 5 failed attempts
-    private int ConnectionAttemptLimit = 3;         //How many times the client will try connecting to the server before it gives up
+    //Track how long we have been waiting to establish a connection to the server until it eventually times out
+    private float ConnectionTimeout = 10.0f;    //How long to wait for the connection to go through before announcing the servers are probably down
+    private bool TimedOut = false;  //Flag set once we have announced that the connection to the server has timed out
 
     void Awake()
     {
@@ -53,7 +51,6 @@ public class ConnectionManager : MonoBehaviour
         //Try connecting to the game server
         Log.Chat("Connecting to the server...");
         InterfaceManager.Instance.SetObjectActive("Connecting Animation", true);
-        ConnectionTimeoutRemaining = ConnectionTimeoutLimit;
         TryingToConnect = true;
         ServerConnection.Connect();
     }
@@ -94,19 +91,20 @@ public class ConnectionManager : MonoBehaviour
 
     void Update()
     {
-        //Keep trying to connect to the server until a connection is opened
+        //Wait for server connection to be established until it times out
         if(TryingToConnect)
             TryConnecting();
-        
-        //Check when a new connection to the server has just been opened it needs to be setup
-        if(ConnectionEstablished && !IsConnected)
+        //Setup the server connection when it connects successfully
+        else if(ConnectionEstablished && !IsConnected)
             SetupNewConnection();
-
-        //Handles any WebSocket events that occur while connected to the game server
-        HandleEvents();
-
-        //Update the PacketQueue so it will automatically transmit all queued network packets in set intervals
-        PacketQueue.UpdateQueue();
+        //Handle Packets from server, and send out our packets in intervals when the connection is open
+        else
+        {
+            //Process instructions sent from the game server
+            HandleEvents();
+            //Send out any queued packets each timestep that passes
+            PacketQueue.UpdateQueue();
+        }
     }
 
     //Handles any WebSocket events that occur while connected to the game server
@@ -159,40 +157,21 @@ public class ConnectionManager : MonoBehaviour
         IsConnected = true;
         //Enable the main menu panel
         InterfaceManager.Instance.SetObjectActive("Main Menu Panel", true);
+        
     }
 
     //Keeps trying to establish a connection with the game server
     private void TryConnecting()
     {
-        //Count down the timer until this attempt has failed
-        ConnectionTimeoutRemaining -= Time.deltaTime;
+        //Count down the timer until the connection attempt times out
+        ConnectionTimeout -= Time.deltaTime;
 
-        //Reset the timer once it reaches zero
-        if(ConnectionTimeoutRemaining <= 0f)
+        //When the connection times out announce that the servers are probably offline
+        if(ConnectionTimeout < 0.0f && !TimedOut)
         {
-            //Reset the timer
-            ConnectionTimeoutRemaining = ConnectionTimeoutLimit;
-            //Increase the failed attempts counter
-            FailedConnectionAttempts++;
-            //End the current connection attempt
-            ServerConnection.Close();
-            //If we have reached the connection attempt limit then we will no longer keep trying
-            if(FailedConnectionAttempts == ConnectionAttemptLimit)
-            {
-                //Announce to the user the connection attempt has been reached
-                Log.Chat("Connection timed out, limit reached. Is the server down?");
-                //Stop trying to connect, hide the connecting animation object
-                TryingToConnect = false;
-                InterfaceManager.Instance.SetObjectActive("Connecting Animation", false);
-                return;
-            }
-            //Otherwise we start a new connection attempt as normal
-            else
-            {
-                //Announce and start a new connection attempt
-                Log.Chat("Connection timed out, trying again...");
-                ServerConnection.Connect();
-            }
+            //Announce that the server connection has timed out and set the TimedOut flag
+            Log.Chat("Having trouble connecting, are the servers down?");
+            TimedOut = true;
         }
     }
     

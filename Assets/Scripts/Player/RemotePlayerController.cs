@@ -23,6 +23,10 @@ public class RemotePlayerController : MonoBehaviour
     //Track how much distance is being travelled over time so we can send our movement speed to the animator
     private Vector3 PreviousFramePosition;
 
+    //Reference the character name display object so its value can be assigned when the player is spawned into the game world
+    public TextMesh DisplayName;
+    public void AssignName(string CharacterName) { DisplayName.text = CharacterName; }
+
     void Awake()
     {
         //Assign a reference to the players character controller and animator components when the scene starts

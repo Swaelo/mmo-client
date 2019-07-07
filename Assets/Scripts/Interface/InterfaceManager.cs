@@ -5,6 +5,8 @@
 // ================================================================================================================================
 
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class InterfaceManager : MonoBehaviour
 {
@@ -14,6 +16,9 @@ public class InterfaceManager : MonoBehaviour
 
     //List of objects to be managed
     public GameObject[] InterfaceObjects;
+
+    //List of 1 UI component from each menu state which should be set to the selected UI component whenever changing to that state
+    public GameObject[] DefaultUIComponents;
 
     //A bunch of interface components need to be disabled as soon as the scene begins
     void Start()
@@ -36,6 +41,13 @@ public class InterfaceManager : MonoBehaviour
             {
                 //Set the objects to the desired value and exit from this function
                 InterfaceObjects[i].SetActive(Active);
+                //Reset menu's navigation whenever they are being entered into
+                if(Active)
+                {
+                    MenuUINavigation MenuNavigation = InterfaceObjects[i].GetComponent<MenuUINavigation>();
+                    if(MenuNavigation != null)
+                        MenuNavigation.ResetNavigation();
+                }
                 return;
             }
         }

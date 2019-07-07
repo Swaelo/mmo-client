@@ -22,6 +22,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
             Log.Chat("Account Login Failed: " + ReplyMessage);
             InterfaceManager.Instance.SetObjectActive("Logging In Panel", false);
             InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
+            
         }
         //Otherwise we want to send a request for all our character data, and wait for that before moving to the character select screen
         else
@@ -44,6 +45,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
             Log.Chat("Account Creation Failed: " + ReplyMessage);
             InterfaceManager.Instance.SetObjectActive("Registering Panel", false);
             InterfaceManager.Instance.SetObjectActive("Account Register Panel", true);
+            
         }
         //Otherwise we move on to the account login screen
         else
@@ -51,6 +53,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
             Log.Chat("Account Created!");
             InterfaceManager.Instance.SetObjectActive("Registering Panel", false);
             InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
+            
         }
     }
 
@@ -64,12 +67,14 @@ public class AccountManagementPacketHandler : MonoBehaviour
         {
             InterfaceManager.Instance.SetObjectActive("Loading Characters Panel", false);
             InterfaceManager.Instance.SetObjectActive("Character Create Panel", true);
+            
             return;
         }
 
         //Otherwise we move on to the character select screen, and update it to show information of our existing characters
         InterfaceManager.Instance.SetObjectActive("Loading Characters Panel", false);
         InterfaceManager.Instance.SetObjectActive("Character Select Panel", true);
+        
 
         //Loop through and extract each charactesr information from the packet data
         for(int i = 0; i < CharacterCount; i++)
@@ -108,6 +113,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
             Log.Chat("Character Creation Failed: " + ReplyMessage);
             InterfaceManager.Instance.SetObjectActive("Creating Character Panel", false);
             InterfaceManager.Instance.SetObjectActive("Character Create Panel", true);
+            
         }
     }
 }

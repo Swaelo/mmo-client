@@ -9,11 +9,16 @@ using UnityEngine.UI;
 
 public class ChatMessageInput : MonoBehaviour
 {
+    //Make into a singleton object so the player character can access it easily so it knows to ignore movement input while typing a message
+    public static ChatMessageInput Instance = null;
+
     public bool IsTyping = false;   //Is the user currently typing a message into the input field
     private InputField ChatWindowInput = null;   //Input field used to input chat messages
     
     void Awake()
     {
+        //Assign singleton
+        Instance = this;
         //Assign the chat input field reference
         ChatWindowInput = GetComponent<InputField>();
     }

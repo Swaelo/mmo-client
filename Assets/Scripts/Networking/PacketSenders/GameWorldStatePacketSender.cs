@@ -41,6 +41,9 @@ public class GameWorldStatePacketSender : MonoBehaviour
         //Enable the chat message input field
         InterfaceManager.Instance.SetObjectActive("Message Input", true);
 
+        //Disable the menu background
+        InterfaceManager.Instance.SetObjectActive("Menu Background", false);
+
         //Disable the main scene camera and the Entering World UI animation
         GameObject.Find("Main Camera").SetActive(false);
         InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);

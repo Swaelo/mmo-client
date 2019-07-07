@@ -9,20 +9,22 @@ using UnityEngine.UI;
 
 public class UIButtonFunctions : MonoBehaviour
 {
-    //Changes from the main menu panel to the account registration panel
-    public void MainMenuRegisterButton()
-    {
-        //Disable the main menu panel, enable the account registration panel
-        InterfaceManager.Instance.SetObjectActive("Main Menu Panel", false);
-        InterfaceManager.Instance.SetObjectActive("Account Register Panel", true);
-    }
-
     //Changes from the main menu panel to the account login panel
     public void MainMenuLoginButton()
     {
         //Disable the main menu panel, and enable the account login panel
         InterfaceManager.Instance.SetObjectActive("Main Menu Panel", false);
         InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
+        
+    }
+
+    //Changes from the main menu panel to the account registration panel
+    public void MainMenuRegisterButton()
+    {
+        //Disable the main menu panel, enable the account registration panel
+        InterfaceManager.Instance.SetObjectActive("Main Menu Panel", false);
+        InterfaceManager.Instance.SetObjectActive("Account Register Panel", true);
+        
     }
 
     //Changes to the waiting animation panel until the account login reply has been received from the server
@@ -53,6 +55,7 @@ public class UIButtonFunctions : MonoBehaviour
         //Disable the account login panel and return back to the main menu panel
         InterfaceManager.Instance.SetObjectActive("Main Menu Panel", true);
         InterfaceManager.Instance.SetObjectActive("Account Login Panel", false);
+        
     }
 
     //Changes to the waiting animation panel until the account registration reply has been received from the server
@@ -82,6 +85,7 @@ public class UIButtonFunctions : MonoBehaviour
         //Disable the account registration panel, enable the main menu panel
         InterfaceManager.Instance.SetObjectActive("Main Menu Panel", true);
         InterfaceManager.Instance.SetObjectActive("Account Register Panel", false);
+        
     }
 
     //Selects the clicked character slot from the character select screen
@@ -136,5 +140,6 @@ public class UIButtonFunctions : MonoBehaviour
     {
         InterfaceManager.Instance.SetObjectActive("Character Create Panel", false);
         InterfaceManager.Instance.SetObjectActive("Character Select Panel", true);
+        
     }
 }

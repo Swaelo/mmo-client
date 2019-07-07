@@ -88,6 +88,23 @@ public class PlayerCharacterController : MonoBehaviour
         return MovementVector;
     }
 
+    //Calculates a new movement vector for the character while ignoring all user input
+    public Vector3 ComputeIgnoredMovementVector(bool ApplyGravity = false)
+    {
+        //Start with an empty movement vector
+        Vector3 MovementVector = Vector3.zero;
+
+        //Apply gravity to it if asked to
+        if(ApplyGravity)
+        {
+            YVelocity -= FallSpeed;
+            MovementVector.y += YVelocity;
+        }
+
+        //retrun the final movement vector
+        return MovementVector;
+    }
+
     //Calculates a new target rotation based on a new MovementVector for the player to lerp towards so they always face the direction they are moving
     public Quaternion ComputeTargetRotation(Vector3 MovementVector)
     {

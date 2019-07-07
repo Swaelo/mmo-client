@@ -23,6 +23,8 @@ public class RemotePlayerHandler : MonoBehaviour
         PlayerPrefabs PrefabManager = GameObject.Find("Prefab Manager").GetComponent<PlayerPrefabs>();
         //Spawn a new remote player prefab into the game world at the given location
         GameObject NewRemotePlayer = GameObject.Instantiate(PrefabManager.RemotePlayerPrefab, PlayerLocation, Quaternion.identity);
+        //Assign the players name to be displayed above their head
+        NewRemotePlayer.GetComponent<RemotePlayerController>().AssignName(PlayerName);
         //Map this new remote player into the dictionary by its player name
         RemotePlayers.Add(PlayerName, NewRemotePlayer);
     }

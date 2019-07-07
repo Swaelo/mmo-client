@@ -41,6 +41,13 @@ public class PlayerFallState : State
 
     protected override void OnStateUpdate()
     {
+        //Run a seperate update method which ignores all user input while the player is typing a message into the chat
+        if(ChatMessageInput.Instance.IsTyping)
+        {
+            UpdateNoInput();
+            return;
+        }
+
         //Fetch a new movement vector for the player
         Vector3 MovementVector = Controller.ComputeMovementVector(true);
 
@@ -82,5 +89,24 @@ public class PlayerFallState : State
         //Only apply the rotation if some movement was applied to the player
         if(MovementVector.x != 0f || MovementVector.z != 0f)
             transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Controller.TurnSpeed * Time.deltaTime);
+    }
+
+    private void UpdateNoInput()
+    {
+        //Fetch a new movement vector for the player ignoring all user input
+        Vector3 MovementVector = Controller.ComputeIgnoredMovementVector(true);
+
+        //Apply this movement to the character
+        Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);
+
+        //Count down the timer restricting us from leaving this state to early
+        StateTimeLeft -= Time.deltaTime;
+        if(StateTimeLeft <= 0f && Controller.IsGrounded)
+        {
+            //Transition into our idle state
+            Controller.Machine.SetState(GetComponent<PlayerIdleState>());
+            //Exit this as we are moving into the idle state
+            return;
+        }
     }
 }

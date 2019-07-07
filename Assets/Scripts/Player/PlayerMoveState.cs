@@ -29,6 +29,13 @@ public class PlayerMoveState : State
 
     protected override void OnStateUpdate()
     {
+        //Run a seperate update method ignoring all user input while they are typing a message into the chat window
+        if(ChatMessageInput.Instance.IsTyping)
+        {
+            UpdateNoInput();
+            return;
+        }
+
         //Fetch a new movement vector to apply to the player
         Vector3 MovementVector = Controller.ComputeMovementVector(false);
 
@@ -77,5 +84,11 @@ public class PlayerMoveState : State
         //Calculate a new target rotation and lerp the player towards it so they face towards the direction they move
         Quaternion TargetRotation = Controller.ComputeTargetRotation(MovementVector);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Controller.TurnSpeed * Time.deltaTime);
+    }
+
+    private void UpdateNoInput()
+    {
+        //Just transition to our idle state
+        Controller.Machine.SetState(GetComponent<PlayerIdleState>());
     }
 }

@@ -41,11 +41,18 @@ public class PlayerAttackState : State
 
     protected override void OnStateUpdate()
     {
+        //Run a different update method which ignores all user input if the player is currently typing a message into the chat
+        if(ChatMessageInput.Instance.IsTyping)
+        {
+            UpdateNoInput();
+            return;
+        }
+
         //If another attack input is detected before exiting this state then continue the combo into another attack
         if(Input.GetMouseButtonDown(0))
             ContinueCombo = true;
 
-        //Count down the state timer, when it runs out we need to either leave this start or continue the attack combo
+        //Count down the state timer, when it runs out we need to either leave this state or continue the attack combo
         StateTimeRemaining -= Time.deltaTime;
         if(StateTimeRemaining <= 0f)
         {
@@ -73,6 +80,19 @@ public class PlayerAttackState : State
             StateTimeRemaining = StateTime;
             ComboPerformed = true;  //Set this flag so the combo can only be performed once and not infinitely
             Controller.AnimatorComponent.SetBool("Attack2", true);
+        }
+    }
+
+    //Version of OnStateUpdate that ignores all user input, meant to be used while user is typing a message into the chat window
+    private void UpdateNoInput()
+    {
+        //Count down the state timer, when it runs out we need to either leave this state or continue the attack combo
+        StateTimeRemaining -= Time.deltaTime;
+        if(StateTimeRemaining <= 0.0f)
+        {
+            //We are ignoring movement input right now we simple need to transition out of the attack animations into an idle state
+            Controller.AnimatorComponent.SetTrigger("StopAttack");
+            Controller.Machine.SetState(GetComponent<PlayerIdleState>());
         }
     }
 }

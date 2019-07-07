@@ -30,6 +30,13 @@ public class PlayerIdleState : State
 
     protected override void OnStateUpdate()
     {
+        //Run a seperate update method ignore all user input while they are typing a message into the chat log
+        if(ChatMessageInput.Instance.IsTyping)
+        {
+            UpdateNoInput();
+            return;
+        }
+
         //If the player is no longer touching the ground then we transition to the fall state
         if(!Controller.IsGrounded)
         {
@@ -90,5 +97,15 @@ public class PlayerIdleState : State
         //Only apply the rotation if some movement was applied to the player
         if(MovementVector.x != 0f || MovementVector.z != 0f)
             transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Controller.TurnSpeed * Time.deltaTime);
+    }
+
+    private void UpdateNoInput()
+    {
+        //Transition to falling state if we arent touching the ground
+        if(!Controller.IsGrounded)
+        {
+            Controller.Machine.SetState(GetComponent<PlayerFallState>());
+            return;
+        }
     }
 }
