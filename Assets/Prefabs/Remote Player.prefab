@@ -704,6 +704,7 @@ GameObject:
   - component: {fileID: 6703645221625945141}
   - component: {fileID: 6703645221635535847}
   - component: {fileID: 6703645221620366727}
+  - component: {fileID: 1141471865866474224}
   m_Layer: 0
   m_Name: Remote Player
   m_TagString: Untagged
@@ -737,7 +738,7 @@ Animator:
   m_GameObject: {fileID: 6703645221626167381}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: e42d9259129992a4d95e0b320ca2a43d, type: 3}
-  m_Controller: {fileID: 9100000, guid: ae38e78b066d34b43a1bc45382e87cce, type: 2}
+  m_Controller: {fileID: 9100000, guid: c2eabddd4d72373448dd8948a1bc0b69, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -764,6 +765,21 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &1141471865866474224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6703645221626167381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5432112c5d3cca4fbc442e85ba4afe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TargetPosition: {x: 8, y: 0.5, z: 0}
+  MoveSpeed: 5
+  TurnSpeed: 300
 --- !u!1 &6703645221626167383
 GameObject:
   m_ObjectHideFlags: 0

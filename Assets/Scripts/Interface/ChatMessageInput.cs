@@ -5,75 +5,42 @@
 // ================================================================================================================================
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ChatMessageInput : MonoBehaviour
 {
-    //There should be no way the player can interact with the chat window when the game first finishes loading
+    public bool IsTyping = false;   //Is the user currently typing a message into the input field
+    private InputField ChatWindowInput = null;   //Input field used to input chat messages
     
+    void Awake()
+    {
+        //Assign the chat input field reference
+        ChatWindowInput = GetComponent<InputField>();
+    }
 
+    void Update()
+    {
+        //If the input field is inactive and the client presses the enter key then it should become active so they can start typing a new message
+        if(!IsTyping && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+        {
+            ChatWindowInput.Select();
+            ChatWindowInput.ActivateInputField();
+            IsTyping = true;
+        }
+    }
 
-    // public bool ChatInputEnabled = false;
-    
+    public void InputSubmitCallback()
+    {
+        //Fetch the contents of the input field and then empty it
+        string ChatMessage = ChatWindowInput.text;
+        ChatWindowInput.text = "";
 
-    // public bool ChatInputEnabled = false;
-    // public bool IsTyping = false;
-    // public InputField ChatWindowInput = null;  //Reference to the chat windows input field so the contents can be retrieved when finished typing a message 
-    // public InputField ChatNameInput = null;    //Reference to the chat name input field so the clients username can be sent with the chat messages
-    // public ConnectionManager GameServerConnection = null;  //Reference to the game server connection manager so chat messages can be sent across the network
-    
-    // private void Update()
-    // {
-    //     if(ChatInputEnabled && !IsTyping && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
-    //     {
-    //         ChatWindowInput.Select();
-    //         ChatWindowInput.ActivateInputField();
-    //         IsTyping = true;
-    //     }
-    // }
-
-    // private void InputSubmitCallback()
-    // {
-    //     //If there name field is empty the message cannot be sent
-    //     if(ChatNameInput.text == "")
-    //     {
-    //         Log.Chat("ERROR: You need to set a username to send chat messages.");
-    //         return;
-    //     }
-    //     //If the name field contains any spaces the message cannot be sent
-    //     if(NameContainsSpaces(ChatNameInput.text))
-    //     {
-    //         Log.Chat("ERROR: You are not allowed to have spaces in your chat name.");
-    //         return;
-    //     }
-    //     //If neither the name field nor the input field are empty, display the message in chat and sent it to the game server
-    //     if (ChatWindowInput.text != "")
-    //     {
-    //         PacketSender.SendChatMessage(ChatNameInput.text, ChatWindowInput.text);
-    //         Log.Chat(ChatNameInput.text + ": " + ChatWindowInput.text);
-    //         //GameServerConnection.SendMessage(ChatNameInput.text + ": " + ChatWindowInput.text);
-    //     }
-    //     //Reset the contents of the input field then before it is deselected
-    //     ChatWindowInput.text = "";
-    //     ChatWindowInput.text = "";
-    // }
-
-    // private bool NameContainsSpaces(string ChatName)
-    // {
-    //     for (int i = 0; i < ChatName.Length; i++)
-    //         if (ChatName[i] == ' ')
-    //             return true;
-    //     return false;
-    // }
-
-    // void OnEnable()
-    // {
-    //     ChatWindowInput.onEndEdit.AddListener(delegate { InputSubmitCallback(); });
-    // }
-
-    // void OnDisable()
-    // {
-    //     IsTyping = false;
-    //     ChatWindowInput.onEndEdit.RemoveAllListeners();
-    //     ChatWindowInput.onValueChanged.RemoveAllListeners();
-    // }
+        //If the input message is not empty then it should be sent to the game server
+        if(ChatMessage != "")
+        {
+            PlayerCommunicationPacketSender.Instance.SendChatMessage(ChatMessage);
+            //Also display the users message in their own chat log too
+            Log.Chat(GameState.Instance.CurrentCharacterName + ": " + ChatMessage);
+        }
+    }
 }

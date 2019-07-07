@@ -67,11 +67,13 @@
      <Compile Include="Assets\Scripts\Networking\PacketHandler.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketHandlers\AccountManagementPacketHandler.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketHandlers\GameWorldStatePacketHandler.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketHandlers\PlayerCommunicationPacketHandler.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketHandlers\PlayerManagementPacketHandler.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketQueue.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketSenders\AccountManagementPacketSender.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketSenders\GameWorldStatePacketSender.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketSenders\MiscellaneousPacketSender.cs" />
+     <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerCommunicationPacketSender.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerManagementPacketSender.cs" />
      <Compile Include="Assets\Scripts\Networking\PacketTypes.cs" />
      <Compile Include="Assets\Scripts\Networking\Players\RemotePlayerHandler.cs" />
@@ -82,6 +84,7 @@
      <Compile Include="Assets\Scripts\Player\PlayerIdleState.cs" />
      <Compile Include="Assets\Scripts\Player\PlayerMoveState.cs" />
      <Compile Include="Assets\Scripts\Player\PlayerStateBroadcasting.cs" />
+     <Compile Include="Assets\Scripts\Player\RemotePlayerController.cs" />
      <Compile Include="Assets\Scripts\PrefabLists\PlayerPrefabs.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/lauri/Desktop/mmo-client/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>

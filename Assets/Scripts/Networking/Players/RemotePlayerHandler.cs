@@ -43,7 +43,7 @@ public class RemotePlayerHandler : MonoBehaviour
     {
         //Fetch the remote players GameObject from the dictionary thats going to be updated
         GameObject RemotePlayer = RemotePlayers[PlayerName];
-        //Update this remote player so its placed at its new location
-        RemotePlayer.transform.position = PlayerLocation;
+        //Give the remote player this new target position for it to move towards
+        RemotePlayer.GetComponent<RemotePlayerController>().TargetPosition = PlayerLocation;
     }
 }

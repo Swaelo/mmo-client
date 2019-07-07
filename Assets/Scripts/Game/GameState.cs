@@ -36,7 +36,6 @@ public class GameState : MonoBehaviour
         if(!WorldEntered && ReadyToEnter())
         {
             WorldEntered = true;
-            Debug.Log("ready to spawn into the game world now");
             //Send a message to the game server letting them know we are now ready and are entering into the game world
             GameWorldStatePacketSender.Instance.SendPlayerReadyAlert();
         }

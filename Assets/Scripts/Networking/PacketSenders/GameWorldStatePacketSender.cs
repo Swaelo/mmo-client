@@ -38,6 +38,9 @@ public class GameWorldStatePacketSender : MonoBehaviour
         //Add the new NetworkPacket to the outgoing packets queue
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
 
+        //Enable the chat message input field
+        InterfaceManager.Instance.SetObjectActive("Message Input", true);
+
         //Disable the main scene camera and the Entering World UI animation
         GameObject.Find("Main Camera").SetActive(false);
         InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);
