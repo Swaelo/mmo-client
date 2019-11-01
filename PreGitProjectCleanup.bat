@@ -1,2 +1,3 @@
-@RD /S /Q "C:\Users\lauri\Desktop\mmo-client\Library"
-@RD /S /Q "C:\Users\lauri\Desktop\mmo-client\obj"
+@RD /S /Q "%cd%/Library"
+@RD /S /Q "%cd%/obj"
+@RD /S /Q "%cd%/.vs"
