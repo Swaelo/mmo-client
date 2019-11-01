@@ -4,8 +4,6 @@
 // Author:	    Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RemotePlayerController : MonoBehaviour
@@ -33,6 +31,7 @@ public class RemotePlayerController : MonoBehaviour
         Controller = GetComponent<CharacterController>();
         AnimationController = GetComponent<Animator>();
         PreviousFramePosition = transform.position;
+        TargetPosition = transform.position;
     }
 
     void Update()
