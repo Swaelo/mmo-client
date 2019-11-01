@@ -21,8 +21,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
             string CharacterName = Packet.ReadString();
             Vector3 CharacterPosition = Packet.ReadVector3();
 
-            //Use the RemotePlayerHandler to spawn this other clients player character into our game world
-            RemotePlayerHandler.Instance.AddRemotePlayer(CharacterName, CharacterPosition);
+            //Pass each characters information onto the PlayerManager so it can be spawned into the game world
+            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition);
         }
 
         //Note that we have finished loading in the active player list

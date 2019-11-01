@@ -45,10 +45,11 @@ public class GameWorldStatePacketSender : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Menu Background", false);
 
         //Disable the main scene camera and the Entering World UI animation
-        GameObject.Find("Main Camera").SetActive(false);
+        CameraManager.Instance.ToggleMainCamera(false);
         InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);
 
-        //Spawn in a local player prefab at our characters current world location
-        GameObject.Instantiate(PlayerPrefabs.Instance.LocalPlayerPrefab, GameState.Instance.CharacterPositions[GameState.Instance.SelectedCharacter-1], Quaternion.identity);
+        //Tell the PlayerManager to spawn a local player prefab into the game world
+        Vector3 PlayerSpawnLocation = GameState.Instance.CharacterPositions[GameState.Instance.SelectedCharacter - 1];
+        PlayerManager.Instance.AddLocalPlayer(PlayerSpawnLocation);
     }
 }

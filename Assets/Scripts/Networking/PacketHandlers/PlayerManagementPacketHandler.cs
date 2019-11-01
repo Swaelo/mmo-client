@@ -19,8 +19,8 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         string CharacterName = Packet.ReadString();
         Vector3 CharacterPosition = Packet.ReadVector3();
 
-        //Pass these values onto the remote player handler and it will move the correct player to its new target location
-        RemotePlayerHandler.Instance.UpdatePlayerPosition(CharacterName, CharacterPosition);
+        //Pass these values onto the player handler so it can give the remote player object its new target location
+        PlayerManager.Instance.UpdateRemotePlayerLocation(CharacterName, CharacterPosition);
     }
 
     //Handles instructions to spawn a newly connected game clients player character into our game world
@@ -31,7 +31,7 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         Vector3 CharacterPosition = Packet.ReadVector3();
 
         //Use the remote player manager to spawn this remote player character into our game world
-        RemotePlayerHandler.Instance.AddRemotePlayer(CharacterName, CharacterPosition);
+        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition);
     }
 
     //Handles instructions to despawn some other dead clients player character from our game world
@@ -41,6 +41,6 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         string CharacterName = Packet.ReadString();
 
         //Use the remote player manager to despawn this dead clients player character from our game world
-        RemotePlayerHandler.Instance.RemoveRemotePlayer(CharacterName);
+        PlayerManager.Instance.RemoveRemotePlayer(CharacterName);
     }
 }

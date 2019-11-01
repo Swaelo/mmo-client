@@ -6,7 +6,7 @@
 
 using System.Text;
 using UnityEngine;
-//using HybridWebSocket;
+using UnityEngine.SceneManagement;
 
 public class ConnectionManager : MonoBehaviour
 {
@@ -17,7 +17,10 @@ public class ConnectionManager : MonoBehaviour
     public PacketQueue PacketQueue = null;
 
     //Server connection status
-    private string ServerIP = "ws://203.221.43.175:5500";
+    public bool UseDebugServer = true;
+    private string PublicServerIP = "ws://203.221.43.175:5500";
+    private string DebugServerIP = "ws://203.221.43.175:5501";
+
     public WebSocket ServerConnection;
     private bool TryingToConnect = false;
 
@@ -57,8 +60,9 @@ public class ConnectionManager : MonoBehaviour
 
     private void RegisterWebSocketEvents()
     {
-        //Initialize a new instance of the websocket class
-        ServerConnection = WebSocketFactory.CreateInstance(ServerIP);
+        //Initialize a new isntance of the websocket class, passing in different server IP depending on the value of the UseDebugServer flag
+        //(set to release it connects to the dedicated server PC, with debug it connects to development PC)
+        ServerConnection = UseDebugServer ? WebSocketFactory.CreateInstance(DebugServerIP) : WebSocketFactory.CreateInstance(PublicServerIP);
 
         //Register new connection opened event
         ServerConnection.OnOpen += () =>
@@ -138,6 +142,8 @@ public class ConnectionManager : MonoBehaviour
         Debug.Log("Connection Error: " + ErrorMessage);
         ConnectionError = false;
         IsConnected = false;
+        //Whenever connection errors occur we want to swap into the Disconnected scene
+        SceneManager.LoadScene("Disconnected");
     }
 
     //Handles when the connection with the game server has been shut down
