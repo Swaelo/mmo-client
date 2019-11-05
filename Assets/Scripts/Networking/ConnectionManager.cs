@@ -4,7 +4,9 @@
 // Author:      Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
+using System;
 using System.Text;
+using System.Xml;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,7 +19,6 @@ public class ConnectionManager : MonoBehaviour
     public PacketQueue PacketQueue = null;
 
     //Server connection status
-    public bool UseDebugServer = true;
     private string PublicServerIP = "ws://203.221.43.175:5500";
     private string DebugServerIP = "ws://203.221.43.175:5501";
 
@@ -60,9 +61,8 @@ public class ConnectionManager : MonoBehaviour
 
     private void RegisterWebSocketEvents()
     {
-        //Initialize a new isntance of the websocket class, passing in different server IP depending on the value of the UseDebugServer flag
-        //(set to release it connects to the dedicated server PC, with debug it connects to development PC)
-        ServerConnection = UseDebugServer ? WebSocketFactory.CreateInstance(DebugServerIP) : WebSocketFactory.CreateInstance(PublicServerIP);
+        //Initialize a new instance of the websocket class passing in whatever IP we are found to be using this time
+        ServerConnection = WebSocketFactory.CreateInstance(DebugServerIP);
 
         //Register new connection opened event
         ServerConnection.OnOpen += () =>
@@ -157,6 +157,8 @@ public class ConnectionManager : MonoBehaviour
     //Sets up the connection to the server once it has first been opened
     private void SetupNewConnection()
     {
+        Debug.Log("setting up a new connection");
+
         //Announce the new connection to the chat and hide the connecting animation object
         Log.Chat("Connected!");
         InterfaceManager.Instance.SetObjectActive("Connecting Animation", false);

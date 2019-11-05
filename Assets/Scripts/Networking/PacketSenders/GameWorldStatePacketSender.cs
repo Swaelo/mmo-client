@@ -38,18 +38,7 @@ public class GameWorldStatePacketSender : MonoBehaviour
         //Add the new NetworkPacket to the outgoing packets queue
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
 
-        //Enable the chat message input field
-        InterfaceManager.Instance.SetObjectActive("Message Input", true);
-
-        //Disable the menu background
-        InterfaceManager.Instance.SetObjectActive("Menu Background", false);
-
-        //Disable the main scene camera and the Entering World UI animation
-        CameraManager.Instance.ToggleMainCamera(false);
-        InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);
-
-        //Tell the PlayerManager to spawn a local player prefab into the game world
-        Vector3 PlayerSpawnLocation = GameState.Instance.CharacterPositions[GameState.Instance.SelectedCharacter - 1];
-        PlayerManager.Instance.AddLocalPlayer(PlayerSpawnLocation);
+        //The server will now add our player into the queue to be added into the game world as soon as possible, once its done
+        //this and added us into the game world they will let us know and then we will be able to enter into the game world
     }
 }

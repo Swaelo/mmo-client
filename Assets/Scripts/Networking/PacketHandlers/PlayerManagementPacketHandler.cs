@@ -43,4 +43,18 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         //Use the remote player manager to despawn this dead clients player character from our game world
         PlayerManager.Instance.RemoveRemotePlayer(CharacterName);
     }
+
+    //Finally enters our player character into the game world once the server has let us know they've added us into the world physics simulation
+    public static void HandlePlayerBegin(ref NetworkPacket Packet)
+    {
+        //Change from the main menu UI to the ingame UI
+        InterfaceManager.Instance.SetObjectActive("Message Input", true);
+        InterfaceManager.Instance.SetObjectActive("Menu Background", false);
+        InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);
+
+        //Disable the menu camera and spawn our character into the game world
+        CameraManager.Instance.ToggleMainCamera(false);
+        Vector3 PlayerSpawnLocation = GameState.Instance.CharacterPositions[GameState.Instance.SelectedCharacter - 1];
+        PlayerManager.Instance.AddLocalPlayer(PlayerSpawnLocation);
+    }
 }

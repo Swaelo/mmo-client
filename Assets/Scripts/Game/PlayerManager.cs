@@ -24,6 +24,13 @@ public class PlayerManager : MonoBehaviour
     /// <param name="PlayerLocation">The characters initial starting location</param>
     public void AddRemotePlayer(string PlayerName, Vector3 PlayerLocation)
     {
+        //Requests to add players we already know about should be ignored
+        if (RemotePlayers.ContainsKey(PlayerName))
+        {
+            Log.Chat("Ignoring request to add already known player " + PlayerName);
+            return;
+        }
+
         //Spawn a new remote player object into the game world using the prefab manager
         GameObject RemotePlayer = GameObject.Instantiate(PrefabManager.Instance.RemotePlayerPrefab, PlayerLocation, Quaternion.identity);
         //Update the character name displayed above the new characters head
@@ -47,6 +54,13 @@ public class PlayerManager : MonoBehaviour
     /// <param name="PlayerName">Name of player to be removed</param>
     public void RemoveRemotePlayer(string PlayerName)
     {
+        //Make sure we know about a character before we try to destroy it, if we dont know about it then it should be ignored
+        if (!RemotePlayers.ContainsKey(PlayerName))
+        {
+            Log.Chat("Ignoring request to remove unknown player: " + PlayerName);
+            return;
+        }
+
         GameObject.Destroy(RemotePlayers[PlayerName]);
         RemotePlayers.Remove(PlayerName);        
     }
@@ -56,26 +70,8 @@ public class PlayerManager : MonoBehaviour
     /// </summary>
     public void RemoveLocalPlayer()
     {
-        Debug.Log("remove local player");
         GameObject.Destroy(LocalPlayer);
-    }
-
-    /// <summary>
-    /// Removes all existing remote player characters from the game world
-    /// </summary>
-    public void RemoveAllRemotePlayers()
-    {
-        Debug.Log("remove all remote players");
-
-        //Place all of the remote player objects into a new list
-        List<GameObject> RemotePlayerObjects = new List<GameObject>();
-        foreach (KeyValuePair<string, GameObject> RemotePlayer in RemotePlayers)
-            RemotePlayerObjects.Add(RemotePlayer.Value);
-        //Loop through and destroy all the objects
-        foreach (GameObject RemotePlayer in RemotePlayerObjects)
-            GameObject.Destroy(RemotePlayer);
-        //Empty the dictionary list
-        RemotePlayers.Clear();
+        LocalPlayer = null;
     }
 
     /// <summary>
@@ -85,7 +81,15 @@ public class PlayerManager : MonoBehaviour
     /// <param name="NewLocation">New target location for the player</param>
     public void UpdateRemotePlayerLocation(string PlayerName, Vector3 NewLocation)
     {
-        //Pass the NewLocation value into the RemotePlayerController object
+        //If we are given instructions to update the location of an unknown player then we should instead add them into our game world
+        if(!RemotePlayers.ContainsKey(PlayerName))
+        {
+            Log.Chat("Requested to update unknown player " + PlayerName + ", adding them into our game scene now.");
+            AddRemotePlayer(PlayerName, NewLocation);
+            return;
+        }
+
+        //Otherwise we just update them like normal
         RemotePlayers[PlayerName].GetComponent<RemotePlayerController>().TargetPosition = NewLocation;
     }
 }

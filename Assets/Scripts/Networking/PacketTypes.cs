@@ -66,5 +66,6 @@ public enum ServerPacketType
     PlayerInventoryItems = 16,
     PlayerEquipmentItems = 17,
     PlayerActionBarAbilities = 18,
-    PlayerTotalItemUpdate = 19
+    PlayerTotalItemUpdate = 19,
+    PlayerBegin
 };

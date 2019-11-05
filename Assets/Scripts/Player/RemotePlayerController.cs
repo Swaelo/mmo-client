@@ -48,7 +48,6 @@ public class RemotePlayerController : MonoBehaviour
 
             //Calculate a new target rotation and lerp towards that so they player faces the direction they are moving
             transform.rotation = Quaternion.RotateTowards(transform.rotation, ComputeTargetRotation(TargetOffset), TurnSpeed * Time.deltaTime);
-
         }
 
         //Calculate how much distance has been travelled since the last frame and pass it on to the animation controller
