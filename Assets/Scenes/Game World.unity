@@ -6403,6 +6403,7 @@ MonoBehaviour:
   InventoryLoaded: 0
   EquipmentLoaded: 0
   AbilitiesLoaded: 0
+  PlayerReady: 0
   WorldEntered: 0
 --- !u!4 &732930241
 Transform:

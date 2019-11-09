@@ -198,7 +198,7 @@ public class WebSocket : IWebSocket
         //Bind OnClose event
         this.WS.OnClose += (Sender, EV) => { this.OnClose?.Invoke(WebSocketHelpers.ParseCloseCodeEnum((int)EV.Code)); };
     }
-
+    
     //Open WebSocket connection
     public void Connect() { this.WS.ConnectAsync(); }
 

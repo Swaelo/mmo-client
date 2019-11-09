@@ -47,6 +47,9 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     //Finally enters our player character into the game world once the server has let us know they've added us into the world physics simulation
     public static void HandlePlayerBegin(ref NetworkPacket Packet)
     {
+        //Print message to show we received persmission from the server to start playing
+        Log.Chat("server gave permission to start playing");
+
         //Change from the main menu UI to the ingame UI
         InterfaceManager.Instance.SetObjectActive("Message Input", true);
         InterfaceManager.Instance.SetObjectActive("Menu Background", false);

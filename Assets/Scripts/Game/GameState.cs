@@ -28,15 +28,17 @@ public class GameState : MonoBehaviour
     public bool InventoryLoaded = false;
     public bool EquipmentLoaded = false;
     public bool AbilitiesLoaded = false;
-    public bool WorldEntered = false;   //Once all the above flags have been set to true, we will be spawned into the game world
+    public bool PlayerReady = false;    //Once all the above flags are set, we tell the server we are ready and wait for them to spawn us on its end
+    public bool WorldEntered = false;   //Once the server has spawned us on their end they will let us know its time we can enter into the game world
+    
+
 
     void Update()
     {
-        //If we have yet to enter into the game world, keep checking to see if we are ready to yet
-        if(!WorldEntered && ReadyToEnter())
+        //If we arent ready yet we need to keep checking, once ready we need to let the server know
+        if(!PlayerReady && ReadyToEnter())
         {
-            WorldEntered = true;
-            //Send a message to the game server letting them know we are now ready and are entering into the game world
+            PlayerReady = true;
             GameWorldStatePacketSender.Instance.SendPlayerReadyAlert();
         }
     }

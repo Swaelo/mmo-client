@@ -19,7 +19,8 @@ public class ConnectionManager : MonoBehaviour
     public PacketQueue PacketQueue = null;
 
     //Server connection status
-    private string PublicServerIP = "ws://203.221.43.175:5500";
+    public Boolean UseDebugServer = false;
+    private string ReleaseServerIP = "ws://203.221.43.175:5500";
     private string DebugServerIP = "ws://203.221.43.175:5501";
 
     public WebSocket ServerConnection;
@@ -62,7 +63,8 @@ public class ConnectionManager : MonoBehaviour
     private void RegisterWebSocketEvents()
     {
         //Initialize a new instance of the websocket class passing in whatever IP we are found to be using this time
-        ServerConnection = WebSocketFactory.CreateInstance(DebugServerIP);
+        string ServerIP = UseDebugServer ? DebugServerIP : ReleaseServerIP;
+        ServerConnection = WebSocketFactory.CreateInstance(ServerIP);
 
         //Register new connection opened event
         ServerConnection.OnOpen += () =>

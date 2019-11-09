@@ -37,8 +37,5 @@ public class GameWorldStatePacketSender : MonoBehaviour
 
         //Add the new NetworkPacket to the outgoing packets queue
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
-
-        //The server will now add our player into the queue to be added into the game world as soon as possible, once its done
-        //this and added us into the game world they will let us know and then we will be able to enter into the game world
     }
 }
