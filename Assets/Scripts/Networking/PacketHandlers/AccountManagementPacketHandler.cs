@@ -12,6 +12,8 @@ public class AccountManagementPacketHandler : MonoBehaviour
     //Handles reply from the server after we have requested to login to a user account
     public static void HandleAccountLoginReply(ref NetworkPacket Packet)
     {
+        Log.In("Account Login Reply");
+
         //Read the data values from the packet reader
         bool LoginSuccess = Packet.ReadBool();
         string ReplyMessage = Packet.ReadString();
@@ -35,6 +37,8 @@ public class AccountManagementPacketHandler : MonoBehaviour
 
     public static void HandleAccountRegisterReply(ref NetworkPacket Packet)
     {
+        Log.In("Account Registration Reply");
+
         //Read the data values from the packet reader
         bool RegisterSuccess = Packet.ReadBool();
         string ReplyMessage = Packet.ReadString();
@@ -59,6 +63,8 @@ public class AccountManagementPacketHandler : MonoBehaviour
 
     public static void HandleCharacterDataReply(ref NetworkPacket Packet)
     {
+        Log.In("Character Data Reply");
+
         //Read the number of characters existing in our account
         int CharacterCount = Packet.ReadInt();
 
@@ -82,10 +88,19 @@ public class AccountManagementPacketHandler : MonoBehaviour
             //Read from the packet data each characters name and location values
             string CharacterName = Packet.ReadString();
             Vector3 CharacterPosition = Packet.ReadVector3();
+            Quaternion CharacterRotation = Packet.ReadQuaternion();
+            float CameraZoom = Packet.ReadFloat();
+            float CameraXRotation = Packet.ReadFloat();
+            float CameraYRotation = Packet.ReadFloat();
 
             //Store the values of all of our existing characters in our connection manager object
-            GameState.Instance.CharacterNames[i] = CharacterName;
-            GameState.Instance.CharacterPositions[i] = CharacterPosition;
+            GameState GS = GameState.Instance;
+            GS.CharacterNames[i] = CharacterName;
+            GS.CharacterPositions[i] = CharacterPosition;
+            GS.CharacterRotations[i] = CharacterRotation;
+            GS.CameraZoomLevels[i] = CameraZoom;
+            GS.CameraXRotationValues[i] = CameraXRotation;
+            GS.CameraYRotationValues[i] = CameraYRotation;
 
             //Update the character select screen to display this characters information
             string InfoObjectName = "Character Info " + (i+1);
@@ -95,6 +110,8 @@ public class AccountManagementPacketHandler : MonoBehaviour
 
     public static void HandleCreateCharacterReply(ref NetworkPacket Packet)
     {
+        Log.In("Character Creation Reply");
+
         //Read the data values from the packet reader
         bool CreationSuccess = Packet.ReadBool();
         string ReplyMessage = Packet.ReadString();

@@ -57,11 +57,12 @@ public class PlayerIdleState : State
             return;
         }
 
-        //Fetch a new movement vector to apply to the player
+        //Fetch a new movement vector to apply to the player and store it in the character controller
         Vector3 MovementVector = Controller.ComputeMovementVector(false);
+        Controller.CurrentMovementVector = MovementVector;
 
         //Adjust the characters YVelocity, apply it to the movement vector and transition to the falling state when they perform a jump action
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             //Update the characters YVelocity and apply that to our movement vector
             Controller.YVelocity = Controller.JumpHeight;
@@ -101,6 +102,9 @@ public class PlayerIdleState : State
 
     private void UpdateNoInput()
     {
+        //Send empty movement vector to the character controller
+        Controller.CurrentMovementVector = Vector3.zero;
+
         //Transition to falling state if we arent touching the ground
         if(!Controller.IsGrounded)
         {

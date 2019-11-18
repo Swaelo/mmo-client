@@ -11,6 +11,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     //Handles loading in list of all other active players before we can enter into the game world
     public static void HandleActivePlayerList(ref NetworkPacket Packet)
     {
+        Log.In("Active Player List");
+
         //Read the number of other clients from the packet data
         int OtherClients = Packet.ReadInt();
 
@@ -20,9 +22,10 @@ public class GameWorldStatePacketHandler : MonoBehaviour
             //Read each characters name and location values
             string CharacterName = Packet.ReadString();
             Vector3 CharacterPosition = Packet.ReadVector3();
+            Quaternion CharacterRotation = Packet.ReadQuaternion();
 
             //Pass each characters information onto the PlayerManager so it can be spawned into the game world
-            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition);
+            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterRotation);
         }
 
         //Note that we have finished loading in the active player list
@@ -32,6 +35,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     //Handles loading in list of all active entities before we can enter into the game world
     public static void HandleActiveEntityList(ref NetworkPacket Packet)
     {
+        Log.In("Active Entity List");
+
         //Read the numer of entities from the packet data
         int EntityCount = Packet.ReadInt();
 
@@ -52,6 +57,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     //Handles loading in list of all active game item pickups before we can enter into the game world
     public static void HandleActiveItemList(ref NetworkPacket Packet)
     {
+        Log.In("Active Item List");
+
         //Read the number of item pickups from the packet data
         int ItemCount = Packet.ReadInt();
 
@@ -71,6 +78,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     //Handles loading in contents of our characters inventory before we can enter into the game world
     public static void HandleInventoryContents(ref NetworkPacket Packet)
     {
+        Log.In("Inventory Contents");
+
         //Read the number of items in our inventory from the packet data
         int ItemCount = Packet.ReadInt();
 
@@ -89,6 +98,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     //Handles loading in contents of our characters equipment before we can enter into the game world
     public static void HandleEquipmentContents(ref NetworkPacket Packet)
     {
+        Log.In("Equipment Contents");
+
         //Read the number of items equipped on our character
         int ItemCount = Packet.ReadInt();
 
@@ -108,6 +119,8 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     //Handles loading in contents of our characters action bar before we can enter into the game world
     public static void HandleActionBarContents(ref NetworkPacket Packet)
     {
+        Log.In("Action Bar Contents");
+
         //Read the number of abilities socketed onto our action bar
         int AbilityCount = Packet.ReadInt();
 

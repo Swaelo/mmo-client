@@ -15,6 +15,8 @@ public class AccountManagementPacketSender : MonoBehaviour
     //Sends a request to the game server to login to a user account
     public void SendLoginRequest(string Username, string Password)
     {
+        Log.Out("Account Login Request");
+
         //Create a new NetworkPacket object to store the data for this login request
         NetworkPacket Packet = new NetworkPacket();
 
@@ -30,6 +32,8 @@ public class AccountManagementPacketSender : MonoBehaviour
     //Sends an alert to the game server letting them know we are logging out of our account
     public void SendLogoutAlert()
     {
+        Log.Out("Account Logout Alert");
+
         //Create a new NetworkPacket object to store the data for this logout alert
         NetworkPacket Packet = new NetworkPacket();
 
@@ -43,6 +47,8 @@ public class AccountManagementPacketSender : MonoBehaviour
     //Sends a request to the game server to register a new user account
     public void SendRegisterRequest(string Username, string Password)
     {
+        Log.Out("Account Registration Request");
+
         //Create a new NetworkPacket object to store the data for this account registration request
         NetworkPacket Packet = new NetworkPacket();
 
@@ -58,6 +64,8 @@ public class AccountManagementPacketSender : MonoBehaviour
     //Requests the game server to send us data about all characters that we own
     public void SendCharacterDataRequest()
     {
+        Log.Out("Character Data Request");
+
         //Create a new NetworkPacket object to store the data for this character data request
         NetworkPacket Packet = new NetworkPacket();
 
@@ -71,6 +79,8 @@ public class AccountManagementPacketSender : MonoBehaviour
     //Sends a request to the game server to create a new player character registered to our user account
     public void SendCreateCharacterRequest(string CharacterName)
     {
+        Log.Out("Character Creation Request");
+
         //Create a new NetworkPacket object to store the data for this new character creation request
         NetworkPacket Packet = new NetworkPacket();
 

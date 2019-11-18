@@ -12,31 +12,57 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     public static PlayerManagementPacketHandler Instance = null;
     void Awake() { Instance = this; }
 
-    //Handles moving one of the other players ingame characters to a new updated location
-    public static void HandlePlayerUpdate(ref NetworkPacket Packet)
+    //Functions for handling other player characters new Position/Rotation/Movement values
+    public static void HandlePositionUpdate(ref NetworkPacket Packet)
     {
-        //Read the relevant values from the network packet
+        //Log what we are doing
+        Log.In("Remote Player Position Update");
+        //Extract all the data from the network packet
         string CharacterName = Packet.ReadString();
         Vector3 CharacterPosition = Packet.ReadVector3();
-
-        //Pass these values onto the player handler so it can give the remote player object its new target location
-        PlayerManager.Instance.UpdateRemotePlayerLocation(CharacterName, CharacterPosition);
+        //Pass these values to the player handler for updating the remote player
+        PlayerManager.Instance.UpdateRemotePlayerPosition(CharacterName, CharacterPosition);
+    }
+    public static void HandleRotationUpdate(ref NetworkPacket Packet)
+    {
+        //Log what we are doing
+        Log.In("Remote Player Rotation Update");
+        //Extract all the data from the network packet
+        string CharacterName = Packet.ReadString();
+        Quaternion CharacterRotation = Packet.ReadQuaternion();
+        //Pass these values to the player handler for updating the remote player
+        PlayerManager.Instance.UpdateRemotePlayerRotation(CharacterName, CharacterRotation);
+    }
+    public static void HandleMovementUpdate(ref NetworkPacket Packet)
+    {
+        //Log what we are doing
+        Log.In("Remote Player Movement Update");
+        //Extract all the data from the network packet
+        string CharacterName = Packet.ReadString();
+        Vector3 CharacterMovement = Packet.ReadVector3();
+        //Pass these values to the player handler for updating the remote player
+        PlayerManager.Instance.UpdateRemotePlayerMovement(CharacterName, CharacterMovement);
     }
 
     //Handles instructions to spawn a newly connected game clients player character into our game world
     public static void HandleSpawnPlayer(ref NetworkPacket Packet)
     {
+        Log.In("Spawn Remote Player");
+
         //Read the relevant values from the network packet
         string CharacterName = Packet.ReadString();
         Vector3 CharacterPosition = Packet.ReadVector3();
+        Quaternion CharacterRotation = Packet.ReadQuaternion();
 
         //Use the remote player manager to spawn this remote player character into our game world
-        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition);
+        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterRotation);
     }
 
     //Handles instructions to despawn some other dead clients player character from our game world
     public static void HandleRemovePlayer(ref NetworkPacket Packet)
     {
+        Log.In("Remove Remote Player");
+
         //Read the relevant data values from the network packet
         string CharacterName = Packet.ReadString();
 
@@ -47,17 +73,27 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     //Finally enters our player character into the game world once the server has let us know they've added us into the world physics simulation
     public static void HandlePlayerBegin(ref NetworkPacket Packet)
     {
-        //Print message to show we received persmission from the server to start playing
-        Log.Chat("server gave permission to start playing");
+        Log.In("Local Player Begin");
 
-        //Change from the main menu UI to the ingame UI
+        //Change from the main menu UI to the ingame UI, disable the menu camera
         InterfaceManager.Instance.SetObjectActive("Message Input", true);
         InterfaceManager.Instance.SetObjectActive("Menu Background", false);
         InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);
-
-        //Disable the menu camera and spawn our character into the game world
         CameraManager.Instance.ToggleMainCamera(false);
-        Vector3 PlayerSpawnLocation = GameState.Instance.CharacterPositions[GameState.Instance.SelectedCharacter - 1];
-        PlayerManager.Instance.AddLocalPlayer(PlayerSpawnLocation);
+
+        //Get the current character index freom the GameState object, use that to fetch our position/rotation then spawn into the game world with those values
+        GameState GS = GameState.Instance;
+        GS.WorldEntered = true;
+        int CharacterIndex = GS.SelectedCharacter - 1;
+        Vector3 SpawnLocation = GS.CharacterPositions[CharacterIndex];
+        Quaternion SpawnRotation = GS.CharacterRotations[CharacterIndex];
+        PlayerManager.Instance.AddLocalPlayer(SpawnLocation, SpawnRotation);
+
+        //Fetch the current zoom/rotation values of the players camera, set the camera to these values then enable camera state broadcasting
+        float CameraZoom = GS.CameraZoomLevels[CharacterIndex];
+        float CameraXRotation = GS.CameraXRotationValues[CharacterIndex];
+        float CameraYRotation = GS.CameraYRotationValues[CharacterIndex];
+        GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
+        PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
     }
 }

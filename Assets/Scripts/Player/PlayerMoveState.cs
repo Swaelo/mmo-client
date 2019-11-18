@@ -19,7 +19,7 @@ public class PlayerMoveState : State
 
     protected override void OnStateEnter()
     {
-        
+
     }
 
     protected override void OnStateExit()
@@ -36,11 +36,12 @@ public class PlayerMoveState : State
             return;
         }
 
-        //Fetch a new movement vector to apply to the player
+        //Fetch a new movement vector to apply to the player and store it in the character controller
         Vector3 MovementVector = Controller.ComputeMovementVector(false);
+        Controller.CurrentMovementVector = MovementVector;
 
         //Adjust the characters YVelocity, apply it to the movement vector and transition to the falling state when they perform a jump action
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             //Update the characters YVelocity and apply that to our movement vector
             Controller.YVelocity = Controller.JumpHeight;
@@ -88,6 +89,8 @@ public class PlayerMoveState : State
 
     private void UpdateNoInput()
     {
+        //Store empty movement vector in the character controller
+        Controller.CurrentMovementVector = Vector3.zero;
         //Just transition to our idle state
         Controller.Machine.SetState(GetComponent<PlayerIdleState>());
     }

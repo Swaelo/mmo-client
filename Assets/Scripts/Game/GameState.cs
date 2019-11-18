@@ -18,8 +18,13 @@ public class GameState : MonoBehaviour
     public int SelectedCharacter = 0;   //Which character slot is currently being used
     public string[] CharacterNames = { "", "", "" };    //The names of characters existing under the current user account
     public Vector3[] CharacterPositions = { Vector3.zero, Vector3.zero, Vector3.zero }; //The positions of characters existing under the current user account
+    public Quaternion[] CharacterRotations = { Quaternion.identity, Quaternion.identity, Quaternion.identity }; //The rotations of characters existing under this users account
+    public float[] CameraZoomLevels = { 0f, 0f, 0f };   //The current camera zoom levels of the characters in this users account
+    public float[] CameraXRotationValues = { 0f, 0f, 0f }; //The current camera x rotation values of the characters in this users account
+    public float[] CameraYRotationValues = { 0f, 0f, 0f }; //The current camera y rotation values of the characters in this users account
     public string CurrentCharacterName = "";
     public Vector3 CurrentCharacterPosition;
+    public Quaternion CurrentCharacterRotation;
 
     //Tracks which values have been loaded in before we are reading to enter into the game world
     public bool PlayerListLoaded = false;
@@ -31,8 +36,6 @@ public class GameState : MonoBehaviour
     public bool PlayerReady = false;    //Once all the above flags are set, we tell the server we are ready and wait for them to spawn us on its end
     public bool WorldEntered = false;   //Once the server has spawned us on their end they will let us know its time we can enter into the game world
     
-
-
     void Update()
     {
         //If we arent ready yet we need to keep checking, once ready we need to let the server know

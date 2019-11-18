@@ -38,8 +38,12 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.PlayerEquipmentItems, GameWorldStatePacketHandler.HandleEquipmentContents);
         PacketHandlers.Add(ServerPacketType.PlayerActionBarAbilities, GameWorldStatePacketHandler.HandleActionBarContents);
 
+        //Map functions for handling remote players Position/Rotation/Movement updates
+        PacketHandlers.Add(ServerPacketType.CharacterPositionUpdate, PlayerManagementPacketHandler.HandlePositionUpdate);
+        PacketHandlers.Add(ServerPacketType.CharacterRotationUpdate, PlayerManagementPacketHandler.HandleRotationUpdate);
+        PacketHandlers.Add(ServerPacketType.CharacterMovementUpdate, PlayerManagementPacketHandler.HandleMovementUpdate);
+
         //Map all the player management packet handlers into the dictionary
-        PacketHandlers.Add(ServerPacketType.PlayerUpdate, PlayerManagementPacketHandler.HandlePlayerUpdate);
         PacketHandlers.Add(ServerPacketType.SpawnPlayer, PlayerManagementPacketHandler.HandleSpawnPlayer);
         PacketHandlers.Add(ServerPacketType.RemovePlayer, PlayerManagementPacketHandler.HandleRemovePlayer);
 

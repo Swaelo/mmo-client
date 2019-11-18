@@ -32,6 +32,7 @@ public class PlayerAttackState : State
     {
         Controller.AnimatorComponent.SetTrigger("Attack");
         Controller.AnimatorComponent.SetBool("Attack2", false);
+        Controller.CurrentMovementVector = Vector3.zero;
         StateTimeRemaining = StateTime;
         ContinueCombo = false;
         ComboPerformed = false;
@@ -86,6 +87,9 @@ public class PlayerAttackState : State
     //Version of OnStateUpdate that ignores all user input, meant to be used while user is typing a message into the chat window
     private void UpdateNoInput()
     {
+        //Set empty movement vector in the character controller
+        Controller.CurrentMovementVector = Vector3.zero;
+
         //Count down the state timer, when it runs out we need to either leave this state or continue the attack combo
         StateTimeRemaining -= Time.deltaTime;
         if(StateTimeRemaining <= 0.0f)

@@ -39,7 +39,14 @@ public enum ClientPacketType
     PlayerDropAbility = 29,
 
     AccountLogoutAlert = 30,
-    StillAlive = 31
+    StillAlive = 31,
+    CameraSettings = 32,
+
+    CharacterPositionUpdate = 33,
+    CharacterRotationUpdate = 34,
+    CharacterMovementUpdate = 35,
+
+    RemotePlayerUnknown = 36
 };
 
 public enum ServerPacketType
@@ -67,5 +74,9 @@ public enum ServerPacketType
     PlayerEquipmentItems = 17,
     PlayerActionBarAbilities = 18,
     PlayerTotalItemUpdate = 19,
-    PlayerBegin
+    PlayerBegin = 20,
+
+    CharacterPositionUpdate = 21,
+    CharacterRotationUpdate = 22,
+    CharacterMovementUpdate = 23
 };

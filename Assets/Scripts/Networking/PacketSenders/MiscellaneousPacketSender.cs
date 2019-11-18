@@ -15,6 +15,8 @@ public class MiscellaneousPacketSender : MonoBehaviour
     //Sends an alert to the game server letting them know we are still connected
     public void SendStillAliveAlert()
     {
+        Log.Out("Still Alive Alert");
+
         //Create a new NetworkPacket object to store the data for this alert
         NetworkPacket Packet = new NetworkPacket();
 

@@ -25,4 +25,24 @@ public static class Log
             FinalMessage += Data[i].ToString();
         ChatWindowManager.Instance.DisplayMessage(FinalMessage);
     }
+
+    //Displays a message showing that a certain packet was sent to the game server
+    public static void Out(string Message)
+    {
+        if (!DebugSettings.Instance.LogOutgoingPackets)
+            return;
+            
+        ChatWindowManager.Instance.DisplayMessage("PacketOut: " + Message);
+        Debug.Log("PacketOut: " + Message);
+    }
+
+    //Displays a message showing the a certain packet was received from the game server
+    public static void In(string Message)
+    {
+        if (!DebugSettings.Instance.LogIncomingPackets)
+            return;
+            
+        ChatWindowManager.Instance.DisplayMessage("PacketIn: " + Message);
+        Debug.Log("PacketIn: " + Message);
+    }
 }

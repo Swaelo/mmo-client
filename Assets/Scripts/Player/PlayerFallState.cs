@@ -41,18 +41,19 @@ public class PlayerFallState : State
 
     protected override void OnStateUpdate()
     {
-        //Run a seperate update method which ignores all user input while the player is typing a message into the chat
+        //Use different update method ignoring all user input while player is typing a message into the chat
         if(ChatMessageInput.Instance.IsTyping)
         {
             UpdateNoInput();
             return;
         }
 
-        //Fetch a new movement vector for the player
+        //Fetch new movement vector for the player and store it in the character controller
         Vector3 MovementVector = Controller.ComputeMovementVector(true);
+        Controller.CurrentMovementVector = MovementVector;
 
         //Check if the player tries to perform a second jump if they havnt already
-        if(!DoubleJumped && Input.GetKeyDown(KeyCode.Space))
+        if (!DoubleJumped && Input.GetKeyDown(KeyCode.Space))
         {
             //Update the animator to perform the flip animation and set the double jump flag so they cant jump again
             Controller.AnimatorComponent.SetTrigger("DoubleJump");
@@ -68,13 +69,13 @@ public class PlayerFallState : State
 
         //Count down the statetimer, then once its depleted keep checking until the player hits the ground then transition out of the falling state
         StateTimeLeft -= Time.deltaTime;
-        if(StateTimeLeft <= 0f && Controller.IsGrounded)
+        if (StateTimeLeft <= 0f && Controller.IsGrounded)
         {
             //Compute how much horizontal distance the player has travelled so we know whether to transition between the idle or move state
             float HorizontalMovement = Controller.GetHorizontalMovement();
 
             //Transition to idle with no movement detected
-            if(HorizontalMovement < 0.01f)
+            if (HorizontalMovement < 0.01f)
                 Controller.Machine.SetState(GetComponent<PlayerIdleState>());
             //Otherwise transition to move state
             else
@@ -87,7 +88,7 @@ public class PlayerFallState : State
         //Calculate and lerp towards a new target rotation value to face towards the direction the player is moving in
         Quaternion TargetRotation = Controller.ComputeTargetRotation(MovementVector);
         //Only apply the rotation if some movement was applied to the player
-        if(MovementVector.x != 0f || MovementVector.z != 0f)
+        if (MovementVector.x != 0f || MovementVector.z != 0f)
             transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Controller.TurnSpeed * Time.deltaTime);
     }
 
@@ -95,6 +96,8 @@ public class PlayerFallState : State
     {
         //Fetch a new movement vector for the player ignoring all user input
         Vector3 MovementVector = Controller.ComputeIgnoredMovementVector(true);
+        //Store the current movement vector in the character controller
+        Controller.CurrentMovementVector = MovementVector;
 
         //Apply this movement to the character
         Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);

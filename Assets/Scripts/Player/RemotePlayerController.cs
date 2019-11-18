@@ -8,82 +8,122 @@ using UnityEngine;
 
 public class RemotePlayerController : MonoBehaviour
 {
-    //Controller used to move this player around the scene
-    private CharacterController Controller;
-    //Current target position for the player to be moved towards
-    public Vector3 TargetPosition;
-    //How fast the player will move towards its target position
-    public float MoveSpeed = 5f;
-    //How fast the player will turn to face the direction it moving in
-    public float TurnSpeed = 300f;
-    //Animator Controller component used to control the players animations
-    private Animator AnimationController;
-    //Track how much distance is being travelled over time so we can send our movement speed to the animator
-    private Vector3 PreviousFramePosition;
+    //Movement Control
+    private CharacterController MovementController; //Used to move the player around the scene
+    private float MovementSpeed = 5f;   //How fast the player moves through the game world
+    private float RotationSpeed = 300f; //How fast the player turns around
+    //Animation Control
+    private Animator AnimationController;   //Used to control the players animation states
+    private Vector3 PreviousFramePosition;  //For computing distance travelled over time, sent to animation controller for idle/moving state transitions
+    //Values last sent to us from the game server and if they are new needing to be processed
+    private Vector3 ServerSidePosition = Vector3.zero;
+    private Quaternion ServerSideRotation = Quaternion.identity;
+    private Vector3 ServerSideMovement = Vector3.zero;
+    private bool NewPosition = false;
 
-    //Reference the character name display object so its value can be assigned when the player is spawned into the game world
-    public TextMesh DisplayName;
-    public void AssignName(string CharacterName) { DisplayName.text = CharacterName; }
-
-    void Awake()
+    private void Awake()
     {
-        //Assign a reference to the players character controller and animator components when the scene starts
-        Controller = GetComponent<CharacterController>();
+        //Assign references and set default values for member variables
+        MovementController = GetComponent<CharacterController>();
         AnimationController = GetComponent<Animator>();
         PreviousFramePosition = transform.position;
-        TargetPosition = transform.position;
     }
 
-    void Update()
+    private void Update()
     {
-        //Get our current offset from our target location
-        Vector3 TargetOffset = TargetPosition - transform.position;
-        //If we are more than .1 units away from our target location then we want to be moving towards it
-        if(TargetOffset.magnitude > .1f)
+        //Snap player to new position values whenever they are provided from the server
+        if(NewPosition)
         {
-            //Normalize the target offset and apply movement speed
-            TargetOffset = TargetOffset.normalized * MoveSpeed;
-            //Move the character closer towards its target location
-            Controller.Move(TargetOffset * Time.deltaTime);
+            //Check difference between current and new position value
+            float MovementDrift = Vector3.Distance(transform.position, ServerSidePosition);
+            //Snap players position if they have drifted too far
+            if (MovementDrift > 3f)
+                transform.position = ServerSidePosition;
+            //Turn off the new values flag now that its been updated
+            NewPosition = false;
+        }
+        //Whenever Updating without having just recieved new position values from the server, we move the client where we think they will do
+        else
+        {
+            //Keep moving player in direction the server told us they are going
+            if(ServerSideMovement != Vector3.zero)
+            {
+                Vector3 MovementVector = ServerSideMovement * MovementSpeed * Time.deltaTime;
+                MovementController.Move(MovementVector);
+            }
+            else
+            {
+                //Lerp towards current server side position
+                transform.position = Vector3.Lerp(transform.position, ServerSidePosition, MovementSpeed * Time.deltaTime);
+            }
 
-            //Calculate a new target rotation and lerp towards that so they player faces the direction they are moving
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, ComputeTargetRotation(TargetOffset), TurnSpeed * Time.deltaTime);
+            //Check if the player character is currently moving or not
+            bool IsMoving = Vector3.Distance(transform.position, PreviousFramePosition) > 0.1f;
+            //While they are moving rotate them to face in the same direction they are moving in
+            if(IsMoving)
+            {
+                Vector3 MovementDirection = PreviousFramePosition - transform.position;
+                Vector3 TargetPosition = transform.position - MovementDirection;
+                Vector3 TargetOffset = TargetPosition - transform.position;
+                TargetOffset = TargetOffset.normalized * MovementSpeed;
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, ComputeTargetRotation(TargetOffset), RotationSpeed * Time.deltaTime);
+            }
+            //While standing still, we lerp their rotation towards the server side rotation value
+            else
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, ServerSideRotation, RotationSpeed * Time.deltaTime);
         }
 
-        //Calculate how much distance has been travelled since the last frame and pass it on to the animation controller
-        //so it knows when to transition between idle and walking animations
+        //Calculate distance travelled since last frame update, and check if the player is standing on the ground or not
         float DistanceTravelled = Vector3.Distance(transform.position, PreviousFramePosition);
-        AnimationController.SetFloat("Movement", DistanceTravelled);
-        //Update the previous frame position for the next frames distance calculation
-        PreviousFramePosition = transform.position;
+        bool OnGround = IsGrounded();
+        //Pass these values onto the animation controller so it knows when to transition between animation states correctly
+        AnimationController.SetFloat("DistanceTravelled", DistanceTravelled);
+        AnimationController.SetBool("IsGrounded", OnGround);
 
-        //Tell the animation controller if we are touching the ground or not
-        AnimationController.SetBool("IsGrounded", IsTouchingGround());
+        //Store the players current location for computing distance travelled in the next frame update
+        PreviousFramePosition = transform.position;
     }
 
-    //Shoots a raycast directly down from the players feet to check how far away the ground is to determine if they are falling or standing
-    private bool IsTouchingGround()
+    //Functions called by the packet handler when the server gives us updated character values
+    public void UpdatePosition(Vector3 NewPosition)
     {
-        RaycastHit GroundHit;   //Shoot a raycast directly downwards, if we hit something we need to check its distance
+        ServerSidePosition = NewPosition;
+        this.NewPosition = true;
+    }
+    public void UpdateRotation(Quaternion NewRotation)
+    {
+        ServerSideRotation = NewRotation;
+    }
+    public void UpdateMovement(Vector3 NewMovement)
+    {
+        ServerSideMovement = NewMovement;
+    }
+
+    //Uses raycasting to check the distance between the players feet and whatever ground is below them to determine if they are standing or in the air
+    private bool IsGrounded()
+    {
+        RaycastHit GroundHit;   //Where information will be stored about what object the raycast hit
+        //Shoot a raycast from the characters feet directly down and see if it hits anything they are able to stand on
         if(Physics.Raycast(transform.position, transform.TransformDirection(-Vector3.up), out GroundHit, 1))
         {
-            //If we hit something we need to see how far away it is, if its within a certain distance then we consider the character to be grounded
+            //If the raycast hit something, check how far away it is, if its close enough then we know the player is standing on it
             float GroundDistance = Vector3.Distance(transform.position, GroundHit.point);
+            //If the ground is less than half a unit of distance away then we know the player is standing on it
             return GroundDistance <= 0.5f;
         }
 
-        //The raycast only goes to a distance of 1 ingame unit, if it didnt hit anything at all then the character obviously isnt on the ground
+        //If the raycast didnt hit anything then we know the player is definitely in the air
         return false;
     }
 
-    //Calculates a new target rotation based on a new MovementVector for the player to lerp towards so they always face the direction they are moving
-    public Quaternion ComputeTargetRotation(Vector3 MovementVector)
+    //Calculates a new target rotation value to face in the direction the player is moving towards
+    private Quaternion ComputeTargetRotation(Vector3 MovementVector)
     {
-        //Return the current rotation while no user input has been detected
-        if(MovementVector == Vector3.zero)
+        //Return current rotation is movement is zero
+        if (MovementVector == Vector3.zero)
             return transform.rotation;
 
-        //Otherwise we want the player to face towards the direction they are moving so return that rotation
+        //Otherwise we want the player to face in the direction they are moving in
         Quaternion TargetRotation = Quaternion.LookRotation(MovementVector);
         Vector3 Eulers = TargetRotation.eulerAngles;
         Eulers.x = transform.rotation.x;

@@ -15,6 +15,8 @@ public class GameWorldStatePacketSender : MonoBehaviour
     //Sends an alert to the game server letting them know we are now entering into the game world with a selected character
     public void SendEnterWorldAlert(string CharacterName)
     {
+        Log.Out("Enter World Alert");
+
         //Create a new NetworkPacket to store the data for this enter world request
         NetworkPacket Packet = new NetworkPacket();
 
@@ -29,6 +31,8 @@ public class GameWorldStatePacketSender : MonoBehaviour
     //Sends an alert to the game server, letting them know we are ready and are now entering into the game world
     public void SendPlayerReadyAlert()
     {
+        Log.Out("Player Ready Alert");
+
         //Create a new NetworkPacket to store the data for this player ready alert
         NetworkPacket Packet = new NetworkPacket();
 

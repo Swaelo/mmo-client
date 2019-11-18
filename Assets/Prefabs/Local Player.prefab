@@ -99,6 +99,9 @@ MonoBehaviour:
   MouseXSpeed: 30
   MouseYSpeed: 30
   MouseDampening: 0.02
+  CurrentCameraDistance: 3.5
+  CurrentXRotation: 0
+  CurrentYRotation: 0
   PlayerTransform: {fileID: 489528485761349214}
   CameraPivotTarget: {fileID: 489528485643562572}
 --- !u!1 &489528485643562572
@@ -560,7 +563,6 @@ GameObject:
   - component: {fileID: 489528485750118386}
   - component: {fileID: 489528485750118381}
   - component: {fileID: 489528485750118383}
-  - component: {fileID: 6819902203324109128}
   m_Layer: 0
   m_Name: Local Player
   m_TagString: Untagged
@@ -710,19 +712,9 @@ MonoBehaviour:
   ControllerComponent: {fileID: 489528485750118380}
   AnimatorComponent: {fileID: 489528485768567180}
   Machine: {fileID: 489528485750118381}
+  CurrentMovementVector: {x: 0, y: 0, z: 0}
+  CurrentPlayerState: 0
   PreviousFramePosition: {x: 0, y: 0, z: 0}
---- !u!114 &6819902203324109128
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 489528485761182270}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fa68eb8fef6d5543bce57ac8c5b0920, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &489528485761182272
 GameObject:
   m_ObjectHideFlags: 0

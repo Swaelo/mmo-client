@@ -17,7 +17,6 @@ public class CameraManager : MonoBehaviour
 
     public void ToggleMainCamera(bool ActiveStatus)
     {
-        Debug.Log("toggle main camera");
         MainCamera.SetActive(ActiveStatus);
     }
 }

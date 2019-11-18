@@ -15,6 +15,8 @@ public class PlayerCommunicationPacketSender : MonoBehaviour
     //Sends a chat message to the game server to be shared with all other ingame clients
     public void SendChatMessage(string Message)
     {
+        Log.Out("Chat Message");
+
         //Create a new NetworkPacket to store the data for this chat message
         NetworkPacket Packet = new NetworkPacket();
 

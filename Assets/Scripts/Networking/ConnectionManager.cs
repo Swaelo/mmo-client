@@ -40,6 +40,11 @@ public class ConnectionManager : MonoBehaviour
     private float ConnectionTimeout = 10.0f;    //How long to wait for the connection to go through before announcing the servers are probably down
     private bool TimedOut = false;  //Flag set once we have announced that the connection to the server has timed out
 
+    //If the server doesnt recieve any messages from us for >5 seconds then our connection is closed, we should send the server a message every
+    //few seconds just to let them know we are still here
+    private float StillAliveInterval = 3.5f;
+    private float StillAliveAlert = 3.5f;
+
     void Awake()
     {
         //Assign our singleton class instance
@@ -58,6 +63,34 @@ public class ConnectionManager : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Connecting Animation", true);
         TryingToConnect = true;
         ServerConnection.Connect();
+    }
+
+    void Update()
+    {
+        //Wait for server connection to be established until it times out
+        if (TryingToConnect)
+            TryConnecting();
+        //Setup the server connection when it connects successfully
+        else if (ConnectionEstablished && !IsConnected)
+            SetupNewConnection();
+        //Handle Packets from server, and send out our packets in intervals when the connection is open
+        else
+        {
+            //Count down the StillAliveAlert timer
+            StillAliveAlert -= Time.deltaTime;
+            if(StillAliveAlert <= 0f)
+            {
+                //Tell the server we are still connected whenever the timer reaches zero
+                MiscellaneousPacketSender.Instance.SendStillAliveAlert();
+                //Reset the timer
+                StillAliveAlert = StillAliveInterval;
+            }
+
+            //Process instructions sent from the game server
+            HandleEvents();
+            //Send out any queued packets each timestep that passes
+            PacketQueue.UpdateQueue();
+        }
     }
 
     private void RegisterWebSocketEvents()
@@ -93,24 +126,6 @@ public class ConnectionManager : MonoBehaviour
             ConnectionClosed = true;
             CloseCode = Code.ToString();
         };
-    }    
-
-    void Update()
-    {
-        //Wait for server connection to be established until it times out
-        if(TryingToConnect)
-            TryConnecting();
-        //Setup the server connection when it connects successfully
-        else if(ConnectionEstablished && !IsConnected)
-            SetupNewConnection();
-        //Handle Packets from server, and send out our packets in intervals when the connection is open
-        else
-        {
-            //Process instructions sent from the game server
-            HandleEvents();
-            //Send out any queued packets each timestep that passes
-            PacketQueue.UpdateQueue();
-        }
     }
 
     //Handles any WebSocket events that occur while connected to the game server
@@ -159,15 +174,12 @@ public class ConnectionManager : MonoBehaviour
     //Sets up the connection to the server once it has first been opened
     private void SetupNewConnection()
     {
-        Debug.Log("setting up a new connection");
-
         //Announce the new connection to the chat and hide the connecting animation object
         Log.Chat("Connected!");
         InterfaceManager.Instance.SetObjectActive("Connecting Animation", false);
         IsConnected = true;
         //Enable the main menu panel
         InterfaceManager.Instance.SetObjectActive("Main Menu Panel", true);
-        
     }
 
     //Keeps trying to establish a connection with the game server
@@ -189,7 +201,10 @@ public class ConnectionManager : MonoBehaviour
     public void MessageServer(string Message)
     {
         //Dont try sending anything if we arent connected to the server right now
-        if(IsConnected) 
-            ServerConnection.Send(Encoding.UTF8.GetBytes(Message));
+        if(IsConnected)
+        {
+            byte[] Payload = Encoding.UTF8.GetBytes(Message);
+            ServerConnection.Send(Payload);
+        }
     }
 }

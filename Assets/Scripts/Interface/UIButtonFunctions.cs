@@ -107,6 +107,7 @@ public class UIButtonFunctions : MonoBehaviour
             InterfaceManager.Instance.SetObjectActive("Entering World Panel", true);
             GameState.Instance.CurrentCharacterName = GameState.Instance.CharacterNames[CharacterSlot-1];
             GameState.Instance.CurrentCharacterPosition = GameState.Instance.CharacterPositions[CharacterSlot-1];
+            GameState.Instance.CurrentCharacterRotation = GameState.Instance.CharacterRotations[CharacterSlot - 1];
             GameWorldStatePacketSender.Instance.SendEnterWorldAlert(GameState.Instance.CurrentCharacterName);
             //We will wait in the entering world panel until we have finished recieving and processing all the game world state data from the server
         }

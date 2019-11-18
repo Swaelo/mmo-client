@@ -15,6 +15,8 @@ public class PlayerCommunicationPacketHandler : MonoBehaviour
     //Recieves some other clients chat message and displays it in our chat log
     public static void HandleChatMessage(ref NetworkPacket Packet)
     {
+        Log.In("Chat Message");
+
         //Read the relevant values from the network packet
         string Sender = Packet.ReadString();
         string Message = Packet.ReadString();

@@ -25,18 +25,21 @@ public class PlayerCharacterController : MonoBehaviour
     public Animator AnimatorComponent;  //Various values and triggers are set during runtime to control the players animations
     public StateMachine Machine;    //StateMachine object used to manage the players current state and called upon to transition between them
 
-    //This is kept up to date at all times and used by the Idle/Move states to know when they need to transition between one another
-    public Vector3 PreviousFramePosition;   //Set to the characters starting position when the game starts for initial calculations
-    public float GetHorizontalMovement()    //Calcualtes how much horizontal (X/Z axis) distance has been travelled since last frame
-    {
-        Vector3 CurrentPosition = new Vector3(transform.position.x, 0f, transform.position.z);
-        Vector3 PreviousPosition = new Vector3(PreviousFramePosition.x, 0f, PreviousFramePosition.z);
-        return Vector3.Distance(CurrentPosition, PreviousPosition);
-    }
+    //Store which values were previously broadcasted to the game server
+    private Vector3 LastPositionTransmission;
+    private Vector3 LastMovementTransmission;
+    private Quaternion LastRotationTransmission;
+    public Vector3 CurrentMovementVector = Vector3.zero;
+
+    public Vector3 PreviousFramePosition;   //Used to computing distance travelled over time, passed to animation controller for state transition control
 
     public void Awake()
     {
+        //Assign some initial values to any member variables which need them
         PreviousFramePosition = transform.position;
+        LastPositionTransmission = transform.position;
+        LastMovementTransmission = Vector3.zero;
+        LastRotationTransmission = transform.rotation;
     }
 
     public void Update()
@@ -49,6 +52,29 @@ public class PlayerCharacterController : MonoBehaviour
 
         //Store the position for next frames movement distance calculations
         PreviousFramePosition = transform.position;
+    }
+
+    //Checks all the current values and broadcasts any to the game server which have changed since last transmission
+    public void TransmitValues()
+    {
+        //Transmit updated position values
+        if(LastPositionTransmission != transform.position)
+        {
+            PlayerManagementPacketSender.Instance.SendCharacterPosition(transform.position);
+            LastPositionTransmission = transform.position;
+        }
+        //Transmit updated rotation values
+        if(LastRotationTransmission != transform.rotation)
+        {
+            PlayerManagementPacketSender.Instance.SendCharacterRotation(transform.rotation);
+            LastRotationTransmission = transform.rotation;
+        }
+        //Transmit updated input movement values
+        if(LastMovementTransmission != CurrentMovementVector)
+        {
+            PlayerManagementPacketSender.Instance.SendCharacterMovement(CurrentMovementVector);
+            LastMovementTransmission = CurrentMovementVector;
+        }
     }
 
     //Shoots a raycast directly down from the players feet to check how far away the ground is to determine if they are falling or standing
@@ -84,8 +110,18 @@ public class PlayerCharacterController : MonoBehaviour
             MovementVector.y += YVelocity;
         }
 
+        //Store the movement vector
+        CurrentMovementVector = MovementVector;
+
         //Return the final movement vector that was calculated
         return MovementVector;
+    }
+
+    public float GetHorizontalMovement()    //Calcualtes how much horizontal (X/Z axis) distance has been travelled since last frame
+    {
+        Vector3 CurrentPosition = new Vector3(transform.position.x, 0f, transform.position.z);
+        Vector3 PreviousPosition = new Vector3(PreviousFramePosition.x, 0f, PreviousFramePosition.z);
+        return Vector3.Distance(CurrentPosition, PreviousPosition);
     }
 
     //Calculates a new movement vector for the character while ignoring all user input
