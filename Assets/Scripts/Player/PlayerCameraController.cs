@@ -77,7 +77,7 @@ public class PlayerCameraController : MonoBehaviour
     public void BroadcastCameraSettings()
     {
         //Send the current camera settings to the game server
-        PlayerManagementPacketSender.Instance.SendPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
+        PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
         //Update these as being the values which were last sent to the game server
         LastDistanceTransmission = CurrentCameraDistance;
         LastXRotationTransmission = CurrentXRotation;

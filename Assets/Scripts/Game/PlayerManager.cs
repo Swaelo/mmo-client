@@ -34,22 +34,13 @@ public class PlayerManager : MonoBehaviour
         //Spawn a new remote player object into the game world using the prefab manager, make sure they are set at the right starting location
         GameObject RemotePlayer = GameObject.Instantiate(PrefabManager.Instance.RemotePlayerPrefab, PlayerLocation, PlayerRotation);
         RemotePlayerController RemoteController = RemotePlayer.GetComponent<RemotePlayerController>();
-        RemoteController.UpdateAll(PlayerLocation, PlayerMovement, PlayerRotation);
+        RemoteController.UpdateValues(PlayerLocation, PlayerMovement, PlayerRotation);
 
         //Update the character name displayed above the new characters head
         TextMesh PlayerNameDisplay = RemotePlayer.transform.Find("Character Name").GetComponent<TextMesh>();
         PlayerNameDisplay.text = PlayerName;
         //Map this new player into the dictionary by its player name
         RemotePlayers.Add(PlayerName, RemotePlayer);
-    }
-
-    /// <summary>
-    /// Spawns a local player prefab into the game world
-    /// </summary>
-    /// <param name="PlayerLocation">World Location where the player will be spawned at</param>
-    public void AddLocalPlayer(Vector3 PlayerLocation, Quaternion PlayerRotation)
-    {
-        LocalPlayer = GameObject.Instantiate(PrefabManager.Instance.LocalPlayerPrefab, PlayerLocation, PlayerRotation);
     }
 
     /// <summary>
@@ -66,7 +57,39 @@ public class PlayerManager : MonoBehaviour
         }
 
         GameObject.Destroy(RemotePlayers[PlayerName]);
-        RemotePlayers.Remove(PlayerName);        
+        RemotePlayers.Remove(PlayerName);
+    }
+
+    /// <summary>
+    /// Function for updating a remote players values
+    /// </summary>
+    /// <param name="Name">Name of the remote player we are updating</param>
+    /// <param name="Location">The remote players new location</param>
+    /// <param name="Movement">The remote players new movement input</param>
+    /// <param name="Rotation">The remote players new rotation</param>
+    public void UpdateRemotePlayer(string Name, Vector3 Location, Vector3 Movement, Quaternion Rotation)
+    {
+        //Make sure this player exists in our game world before we try updating them
+        if (RemotePlayers.ContainsKey(Name))
+        {
+            Log.Chat("Updating Remote Player: " + Name + " with new values.");
+            RemotePlayers[Name].GetComponent<RemotePlayerController>().UpdateValues(Location, Movement, Rotation);
+        }
+        //If we dont have this player in our world yet then we need to have them added now
+        else
+        {
+            Log.Chat("Adding Unknown Remote Player: " + Name + " to our game.");
+            AddRemotePlayer(Name, Location, Movement, Rotation);
+        }
+    }
+
+    /// <summary>
+    /// Spawns a local player prefab into the game world
+    /// </summary>
+    /// <param name="PlayerLocation">World Location where the player will be spawned at</param>
+    public void AddLocalPlayer(Vector3 PlayerLocation, Quaternion PlayerRotation)
+    {
+        LocalPlayer = GameObject.Instantiate(PrefabManager.Instance.LocalPlayerPrefab, PlayerLocation, PlayerRotation);
     }
 
     /// <summary>
@@ -78,37 +101,12 @@ public class PlayerManager : MonoBehaviour
         LocalPlayer = null;
     }
 
-    //Functions for update remote players Location/Rotation/Movement variables
-    public void UpdateRemotePlayerPosition(string CharacterName, Vector3 NewLocation)
+    /// <summary>
+    /// Updates our local player object with a new position
+    /// </summary>
+    /// <param name="Location">New position to apply to the local player character</param>
+    public void UpdateLocalPlayer(Vector3 Location)
     {
-        //Ignore this request if we dont know who the player is
-        if (!RemotePlayers.ContainsKey(CharacterName))
-            return;
-
-        //If we do know who this player is, then we simply give them their new values
-        RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdatePosition(NewLocation);
-    }
-    public void UpdateRemotePlayerRotation(string CharacterName, Quaternion NewRotation)
-    {
-        //Ignore this request if we dont know who the player is
-        if (!RemotePlayers.ContainsKey(CharacterName))
-            return;
-
-        //If we do know who this player is, then we simply give them their new values
-        RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdateRotation(NewRotation);
-    }
-    public void UpdateRemotePlayerMovement(string CharacterName, Vector3 NewMovement)
-    {
-        //Ignore this request if we dont know who the player is
-        if (!RemotePlayers.ContainsKey(CharacterName))
-            return;
-
-        //If we do know who this player is, then we simply give them their new values
-        RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdateMovement(NewMovement);
-    }
-
-    public void UpdateLocalPlayerPosition(Vector3 NewLocation)
-    {
-        LocalPlayer.transform.position = NewLocation;
+        LocalPlayer.transform.position = Location;
     }
 }

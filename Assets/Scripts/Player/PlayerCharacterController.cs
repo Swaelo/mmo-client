@@ -57,23 +57,17 @@ public class PlayerCharacterController : MonoBehaviour
     //Checks all the current values and broadcasts any to the game server which have changed since last transmission
     public void TransmitValues()
     {
-        //Transmit updated position values
-        if(LastPositionTransmission != transform.position)
+        //Transmit all values if any of them have changed
+        if(LastPositionTransmission != transform.position ||
+            LastMovementTransmission != CurrentMovementVector ||
+            LastRotationTransmission != transform.rotation)
         {
-            PlayerManagementPacketSender.Instance.SendCharacterPosition(transform.position);
+            //Send the new values to the server
+            PlayerManagementPacketSender.Instance.SendLocalPlayerCharacterUpdate(transform.position, CurrentMovementVector, transform.rotation);
+            //Store the sent values as the last ones transmitted
             LastPositionTransmission = transform.position;
-        }
-        //Transmit updated rotation values
-        if(LastRotationTransmission != transform.rotation)
-        {
-            PlayerManagementPacketSender.Instance.SendCharacterRotation(transform.rotation);
-            LastRotationTransmission = transform.rotation;
-        }
-        //Transmit updated input movement values
-        if(LastMovementTransmission != CurrentMovementVector)
-        {
-            PlayerManagementPacketSender.Instance.SendCharacterMovement(CurrentMovementVector);
             LastMovementTransmission = CurrentMovementVector;
+            LastRotationTransmission = transform.rotation;
         }
     }
 

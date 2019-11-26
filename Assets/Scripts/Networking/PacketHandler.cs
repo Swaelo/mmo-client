@@ -50,14 +50,10 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.PlayerChatMessage, PlayerCommunicationPacketHandler.HandleChatMessage);
 
         //Player Management Packet Handlers
-        PacketHandlers.Add(ServerPacketType.PlayerPositionUpdate, PlayerManagementPacketHandler.HandlePlayerPositionUpdate);
-        PacketHandlers.Add(ServerPacketType.PlayerRotationUpdate, PlayerManagementPacketHandler.HandlePlayerRotationUpdate);
-        PacketHandlers.Add(ServerPacketType.PlayerMovementUpdate, PlayerManagementPacketHandler.HandlePlayerMovementUpdate);
-        PacketHandlers.Add(ServerPacketType.SpawnOtherPlayer, PlayerManagementPacketHandler.HandleSpawnOtherPlayer);
-        PacketHandlers.Add(ServerPacketType.RemoveOtherPlayer, PlayerManagementPacketHandler.HandleRemoveOtherPlayer);
-        PacketHandlers.Add(ServerPacketType.PlayerBegin, PlayerManagementPacketHandler.HandlePlayerBegin);
-        PacketHandlers.Add(ServerPacketType.ForceMovePlayer, PlayerManagementPacketHandler.HandleForceMovePlayer);
-        PacketHandlers.Add(ServerPacketType.ForceMoveOtherPlayer, PlayerManagementPacketHandler.HandleForceMoveOtherPlayer);
+        PacketHandlers.Add(ServerPacketType.UpdateRemotePlayer, PlayerManagementPacketHandler.HandleUpdateRemotePlayer);
+        PacketHandlers.Add(ServerPacketType.AddRemotePlayer, PlayerManagementPacketHandler.HandleAddRemotePlayer);
+        PacketHandlers.Add(ServerPacketType.RemoveRemotePlayer, PlayerManagementPacketHandler.HandleRemoveRemotePlayer);
+        PacketHandlers.Add(ServerPacketType.AllowPlayerBegin, PlayerManagementPacketHandler.HandleAllowPlayerBegin);
 
         //System Packet Handlers
         PacketHandlers.Add(ServerPacketType.StillConnectedCheck, SystemPacketHandler.HandleStillConnectedCheck);
