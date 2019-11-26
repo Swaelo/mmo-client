@@ -9,8 +9,8 @@ using UnityEngine;
 
 public class PacketQueue
 {
-    private float CommunicationInterval = 0.1f; //How often the outgoing packets list will be emptied and transmitted to the server
-    private float NextCommunication = 0.1f; //Time remaining before the next communication interval occurs
+    private float CommunicationInterval = 0.25f; //How often the outgoing packets list will be emptied and transmitted to the server
+    private float NextCommunication = 0.25f; //Time remaining before the next communication interval occurs
     private List<NetworkPacket> OutgoingPackets;    //Current list of packets to be transmitted in the next communication interval
 
     //Default constructor
@@ -66,7 +66,7 @@ public class PacketQueue
 
         //If the final string actually contains some data then we can now transmit that to the game server
         if(TotalData != "")
-            ConnectionManager.Instance.MessageServer(TotalData);
+            ConnectionManager.Instance.SendPacket(TotalData);
 
         //Reinitialize the outgoing packets queue as all their data has now been transmitted to the game server
         OutgoingPackets = new List<NetworkPacket>();

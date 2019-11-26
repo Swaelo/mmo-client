@@ -31,6 +31,12 @@ public class NetworkPacket
         return false;
     }
 
+    //Adds the packet order number to the start of the packet data
+    public void AddPacketOrderNumber(int PacketNumber)
+    {
+        PacketData = PacketNumber.ToString() + " " + PacketData;
+    }
+
     //Writes an interger value onto the end of the current PacketData
     public void WriteInt(int IntValue)
     {

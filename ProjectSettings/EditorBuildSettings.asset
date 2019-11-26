@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Disconnected.unity
     guid: 4e83ae376fa0f5a47b166032dedf75a0
+  - enabled: 1
+    path: Assets/Scenes/Kicked.unity
+    guid: a75067f2d87db8c4fb67597efe382adb
   m_configObjects: {}

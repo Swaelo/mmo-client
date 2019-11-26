@@ -6,7 +6,7 @@
 
 using System;
 using System.Text;
-using System.Xml;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,9 +22,12 @@ public class ConnectionManager : MonoBehaviour
     public Boolean UseDebugServer = false;
     private string ReleaseServerIP = "ws://203.221.43.175:5500";
     private string DebugServerIP = "ws://203.221.43.175:5501";
-
     public WebSocket ServerConnection;
     private bool TryingToConnect = false;
+
+    public int LastPacketRecieved = 0;  //Identifier number of the last packet that we recieved from the game server
+    public int NextOutgoingPacketNumber = 0;    //Packet order number next being sent to the game server
+    private Dictionary<int, NetworkPacket> PreviousPackets = new Dictionary<int, NetworkPacket>(); //Dictionary storing the last 25 packets set to the game server
 
     //These flags are setin within the WebSocket networking events which are registered into the ServerConnection object
     static bool IsConnected = false;    //Tracks whether the connection the server is open or not
@@ -39,11 +42,6 @@ public class ConnectionManager : MonoBehaviour
     //Track how long we have been waiting to establish a connection to the server until it eventually times out
     private float ConnectionTimeout = 10.0f;    //How long to wait for the connection to go through before announcing the servers are probably down
     private bool TimedOut = false;  //Flag set once we have announced that the connection to the server has timed out
-
-    //If the server doesnt recieve any messages from us for >5 seconds then our connection is closed, we should send the server a message every
-    //few seconds just to let them know we are still here
-    private float StillAliveInterval = 3.5f;
-    private float StillAliveAlert = 3.5f;
 
     void Awake()
     {
@@ -76,16 +74,6 @@ public class ConnectionManager : MonoBehaviour
         //Handle Packets from server, and send out our packets in intervals when the connection is open
         else
         {
-            //Count down the StillAliveAlert timer
-            StillAliveAlert -= Time.deltaTime;
-            if(StillAliveAlert <= 0f)
-            {
-                //Tell the server we are still connected whenever the timer reaches zero
-                MiscellaneousPacketSender.Instance.SendStillAliveAlert();
-                //Reset the timer
-                StillAliveAlert = StillAliveInterval;
-            }
-
             //Process instructions sent from the game server
             HandleEvents();
             //Send out any queued packets each timestep that passes
@@ -169,6 +157,8 @@ public class ConnectionManager : MonoBehaviour
         Debug.Log("Connection Closed: " + CloseCode);
         ConnectionClosed = false;
         IsConnected = false;
+        //Whenever connection errors occur we want to swap into the Disconnected scene
+        SceneManager.LoadScene("Disconnected");
     }
 
     //Sets up the connection to the server once it has first been opened
@@ -198,13 +188,47 @@ public class ConnectionManager : MonoBehaviour
     }
     
     //Sends a message to the game server
-    public void MessageServer(string Message)
+    public void SendPacket(string PacketData)
     {
         //Dont try sending anything if we arent connected to the server right now
         if(IsConnected)
         {
-            byte[] Payload = Encoding.UTF8.GetBytes(Message);
-            ServerConnection.Send(Payload);
+            NetworkPacket NewPacket = new NetworkPacket(PacketData);
+            SendPacket(NewPacket);
         }
+    }
+
+    public void SendPacket(NetworkPacket Packet)
+    {
+        //Set the order number for this packet, then place that at the start of the packet data
+        NextOutgoingPacketNumber++;
+        Packet.AddPacketOrderNumber(NextOutgoingPacketNumber);
+
+        //Store this packet into the previous packets dictionary, maintain the dictionary to only store the last 25 packets sent to the server
+        PreviousPackets.Add(NextOutgoingPacketNumber, Packet);
+        if (PreviousPackets.Count > 25)
+            PreviousPackets.Remove(NextOutgoingPacketNumber - 25);
+
+        //Convert the packet data into byte array then send it over to the game server
+        byte[] Payload = Encoding.UTF8.GetBytes(Packet.PacketData);
+        ServerConnection.Send(Payload);
+    }
+
+    //Transmits a missing packet back to the game server again
+    public void SendMissingPacket(int PacketNumber)
+    {
+        //FIrst check that this missing packet is still stored in memory
+        if(!PreviousPackets.ContainsKey(PacketNumber))
+        {
+            Log.Chat("ERROR: Missing packet no longer in memory, client needs to lose progress and resync to the server.");
+            return;
+        }
+
+        //Otherwise, we fetch the missing packet from the dictionary
+        NetworkPacket MissingPacket = PreviousPackets[PacketNumber];
+
+        //Convert the packet data into bytes then sent it over to the game server
+        byte[] Payload = Encoding.UTF8.GetBytes(MissingPacket.PacketData);
+        ServerConnection.Send(Payload);
     }
 }

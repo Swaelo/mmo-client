@@ -89,12 +89,14 @@
     <Compile Include="Assets\Scripts\Networking\PacketHandlers\GameWorldStatePacketHandler.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketHandlers\PlayerCommunicationPacketHandler.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketHandlers\PlayerManagementPacketHandler.cs" />
+    <Compile Include="Assets\Scripts\Networking\PacketHandlers\SystemPacketHandler.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketQueue.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\AccountManagementPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\GameWorldStatePacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\MiscellaneousPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerCommunicationPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerManagementPacketSender.cs" />
+    <Compile Include="Assets\Scripts\Networking\PacketSenders\SystemPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketTypes.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttackState.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerCameraController.cs" />
