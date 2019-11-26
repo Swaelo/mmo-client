@@ -206,8 +206,8 @@ public class ConnectionManager : MonoBehaviour
 
         //Store this packet into the previous packets dictionary, maintain the dictionary to only store the last 25 packets sent to the server
         PreviousPackets.Add(NextOutgoingPacketNumber, Packet);
-        if (PreviousPackets.Count > 25)
-            PreviousPackets.Remove(NextOutgoingPacketNumber - 25);
+        if (PreviousPackets.Count > 150)
+            PreviousPackets.Remove(NextOutgoingPacketNumber - 150);
 
         //Convert the packet data into byte array then send it over to the game server
         byte[] Payload = Encoding.UTF8.GetBytes(Packet.PacketData);
@@ -217,10 +217,14 @@ public class ConnectionManager : MonoBehaviour
     //Transmits a missing packet back to the game server again
     public void SendMissingPacket(int PacketNumber)
     {
-        //FIrst check that this missing packet is still stored in memory
+        //First check that this missing packet is still stored in memory
         if(!PreviousPackets.ContainsKey(PacketNumber))
         {
-            Log.Chat("ERROR: Missing packet no longer in memory, client needs to lose progress and resync to the server.");
+            //Log an error showing the server has requested packets that are no longer being stored in memory and that this connection needs to be closed down
+            Log.Chat("ERROR: Server requesting missing packet no longer in memory, our progress is going to be lost and our connection will be shut down.");
+
+            //Tell the server we are out of sync so they can kick us from the game and clean us up from the game world and exit out of the function while we wait for that to happen
+            SystemPacketSender.Instance.SendOutOfSyncAlert();
             return;
         }
 
@@ -229,6 +233,13 @@ public class ConnectionManager : MonoBehaviour
 
         //Convert the packet data into bytes then sent it over to the game server
         byte[] Payload = Encoding.UTF8.GetBytes(MissingPacket.PacketData);
+        ServerConnection.Send(Payload);
+    }
+
+    //Transmits a packet to the server immediately, bypassing the packet queue completely
+    public void SendPacketImmediately(NetworkPacket Packet)
+    {
+        byte[] Payload = Encoding.UTF8.GetBytes(Packet.PacketData);
         ServerConnection.Send(Payload);
     }
 }

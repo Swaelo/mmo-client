@@ -90,13 +90,19 @@ public class RemotePlayerController : MonoBehaviour
         ServerSidePosition = NewPosition;
         this.NewPosition = true;
     }
+    public void UpdateMovement(Vector3 NewMovement)
+    {
+        ServerSideMovement = NewMovement;
+    }
     public void UpdateRotation(Quaternion NewRotation)
     {
         ServerSideRotation = NewRotation;
     }
-    public void UpdateMovement(Vector3 NewMovement)
+    public void UpdateAll(Vector3 NewPosition, Vector3 NewMovement, Quaternion NewRotation)
     {
-        ServerSideMovement = NewMovement;
+        UpdatePosition(NewPosition);
+        UpdateMovement(NewMovement);
+        UpdateRotation(NewRotation);
     }
 
     //Uses raycasting to check the distance between the players feet and whatever ground is below them to determine if they are standing or in the air

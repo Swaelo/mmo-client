@@ -45,7 +45,7 @@ public class PlayerMoveState : State
         {
             //Update the characters YVelocity and apply that to our movement vector
             Controller.YVelocity = Controller.JumpHeight;
-            MovementVector.y += Controller.YVelocity;
+            MovementVector.y += Controller.YVelocity * Time.deltaTime;
 
             //Apply this movement vector to the player and transition to the fall state
             Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);

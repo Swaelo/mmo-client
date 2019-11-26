@@ -22,10 +22,11 @@ public class GameWorldStatePacketHandler : MonoBehaviour
             //Read each characters name and location values
             string CharacterName = Packet.ReadString();
             Vector3 CharacterPosition = Packet.ReadVector3();
+            Vector3 CharacterMovement = Packet.ReadVector3();
             Quaternion CharacterRotation = Packet.ReadQuaternion();
 
             //Pass each characters information onto the PlayerManager so it can be spawned into the game world
-            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterRotation);
+            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterMovement, CharacterRotation);
         }
 
         //Note that we have finished loading in the active player list
@@ -96,7 +97,7 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     }
 
     //Handles loading in contents of our characters equipment before we can enter into the game world
-    public static void HandleEquipmentContents(ref NetworkPacket Packet)
+    public static void HandleEquippedItems(ref NetworkPacket Packet)
     {
         Log.In("Equipment Contents");
 
@@ -117,7 +118,7 @@ public class GameWorldStatePacketHandler : MonoBehaviour
     }
 
     //Handles loading in contents of our characters action bar before we can enter into the game world
-    public static void HandleActionBarContents(ref NetworkPacket Packet)
+    public static void HandleSocketedAbilities(ref NetworkPacket Packet)
     {
         Log.In("Action Bar Contents");
 

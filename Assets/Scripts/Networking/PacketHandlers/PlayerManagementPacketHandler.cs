@@ -13,7 +13,7 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     void Awake() { Instance = this; }
 
     //Functions for handling other player characters new Position/Rotation/Movement values
-    public static void HandlePositionUpdate(ref NetworkPacket Packet)
+    public static void HandlePlayerPositionUpdate(ref NetworkPacket Packet)
     {
         //Log what we are doing
         Log.In("Remote Player Position Update");
@@ -23,7 +23,7 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         //Pass these values to the player handler for updating the remote player
         PlayerManager.Instance.UpdateRemotePlayerPosition(CharacterName, CharacterPosition);
     }
-    public static void HandleRotationUpdate(ref NetworkPacket Packet)
+    public static void HandlePlayerRotationUpdate(ref NetworkPacket Packet)
     {
         //Log what we are doing
         Log.In("Remote Player Rotation Update");
@@ -33,7 +33,7 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         //Pass these values to the player handler for updating the remote player
         PlayerManager.Instance.UpdateRemotePlayerRotation(CharacterName, CharacterRotation);
     }
-    public static void HandleMovementUpdate(ref NetworkPacket Packet)
+    public static void HandlePlayerMovementUpdate(ref NetworkPacket Packet)
     {
         //Log what we are doing
         Log.In("Remote Player Movement Update");
@@ -45,21 +45,22 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     }
 
     //Handles instructions to spawn a newly connected game clients player character into our game world
-    public static void HandleSpawnPlayer(ref NetworkPacket Packet)
+    public static void HandleSpawnOtherPlayer(ref NetworkPacket Packet)
     {
         Log.In("Spawn Remote Player");
 
         //Read the relevant values from the network packet
         string CharacterName = Packet.ReadString();
         Vector3 CharacterPosition = Packet.ReadVector3();
+        Vector3 CharacterMovement = Packet.ReadVector3();
         Quaternion CharacterRotation = Packet.ReadQuaternion();
 
         //Use the remote player manager to spawn this remote player character into our game world
-        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterRotation);
+        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterMovement, CharacterRotation);
     }
 
     //Handles instructions to despawn some other dead clients player character from our game world
-    public static void HandleRemovePlayer(ref NetworkPacket Packet)
+    public static void HandleRemoveOtherPlayer(ref NetworkPacket Packet)
     {
         Log.In("Remove Remote Player");
 

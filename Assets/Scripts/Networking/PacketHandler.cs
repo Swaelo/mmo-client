@@ -32,42 +32,36 @@ public class PacketHandler : MonoBehaviour
         //Create a new dictionary to store all the packet handler functions
         PacketHandlers = new Dictionary<ServerPacketType, Packet>();
 
-        //Map all the account management packet handlers into the dictionary
+        //Account Management Packet Handlers
         PacketHandlers.Add(ServerPacketType.AccountLoginReply, AccountManagementPacketHandler.HandleAccountLoginReply);
-        PacketHandlers.Add(ServerPacketType.AccountRegistrationReply, AccountManagementPacketHandler.HandleAccountRegisterReply);
+        PacketHandlers.Add(ServerPacketType.AccountRegistrationReply, AccountManagementPacketHandler.HandleAccountRegistrationReply);
         PacketHandlers.Add(ServerPacketType.CharacterDataReply, AccountManagementPacketHandler.HandleCharacterDataReply);
-        PacketHandlers.Add(ServerPacketType.CharacterCreationReply, AccountManagementPacketHandler.HandleCreateCharacterReply);
+        PacketHandlers.Add(ServerPacketType.CreateCharacterReply, AccountManagementPacketHandler.HandleCreateCharacterReply);
 
-        //Map all the game world state packet handlers into the dictionary
+        //Game World State Packet Handlers
         PacketHandlers.Add(ServerPacketType.ActivePlayerList, GameWorldStatePacketHandler.HandleActivePlayerList);
         PacketHandlers.Add(ServerPacketType.ActiveEntityList, GameWorldStatePacketHandler.HandleActiveEntityList);
         PacketHandlers.Add(ServerPacketType.ActiveItemList, GameWorldStatePacketHandler.HandleActiveItemList);
-        PacketHandlers.Add(ServerPacketType.PlayerInventoryItems, GameWorldStatePacketHandler.HandleInventoryContents);
-        PacketHandlers.Add(ServerPacketType.PlayerEquipmentItems, GameWorldStatePacketHandler.HandleEquipmentContents);
-        PacketHandlers.Add(ServerPacketType.PlayerActionBarAbilities, GameWorldStatePacketHandler.HandleActionBarContents);
+        PacketHandlers.Add(ServerPacketType.InventoryContents, GameWorldStatePacketHandler.HandleInventoryContents);
+        PacketHandlers.Add(ServerPacketType.EquippedItems, GameWorldStatePacketHandler.HandleEquippedItems);
+        PacketHandlers.Add(ServerPacketType.SocketedAbilities, GameWorldStatePacketHandler.HandleSocketedAbilities);
 
-        //Map functions for handling remote players Position/Rotation/Movement updates
-        PacketHandlers.Add(ServerPacketType.CharacterPositionUpdate, PlayerManagementPacketHandler.HandlePositionUpdate);
-        PacketHandlers.Add(ServerPacketType.CharacterRotationUpdate, PlayerManagementPacketHandler.HandleRotationUpdate);
-        PacketHandlers.Add(ServerPacketType.CharacterMovementUpdate, PlayerManagementPacketHandler.HandleMovementUpdate);
-
-        //Map all the player management packet handlers into the dictionary
-        PacketHandlers.Add(ServerPacketType.SpawnPlayer, PlayerManagementPacketHandler.HandleSpawnPlayer);
-        PacketHandlers.Add(ServerPacketType.RemovePlayer, PlayerManagementPacketHandler.HandleRemovePlayer);
-
-        //Map player communication packet handlers into the dictionary
+        //Player Communication Packet Handlers
         PacketHandlers.Add(ServerPacketType.PlayerChatMessage, PlayerCommunicationPacketHandler.HandleChatMessage);
+
+        //Player Management Packet Handlers
+        PacketHandlers.Add(ServerPacketType.PlayerPositionUpdate, PlayerManagementPacketHandler.HandlePlayerPositionUpdate);
+        PacketHandlers.Add(ServerPacketType.PlayerRotationUpdate, PlayerManagementPacketHandler.HandlePlayerRotationUpdate);
+        PacketHandlers.Add(ServerPacketType.PlayerMovementUpdate, PlayerManagementPacketHandler.HandlePlayerMovementUpdate);
+        PacketHandlers.Add(ServerPacketType.SpawnOtherPlayer, PlayerManagementPacketHandler.HandleSpawnOtherPlayer);
+        PacketHandlers.Add(ServerPacketType.RemoveOtherPlayer, PlayerManagementPacketHandler.HandleRemoveOtherPlayer);
         PacketHandlers.Add(ServerPacketType.PlayerBegin, PlayerManagementPacketHandler.HandlePlayerBegin);
+        PacketHandlers.Add(ServerPacketType.ForceMovePlayer, PlayerManagementPacketHandler.HandleForceMovePlayer);
+        PacketHandlers.Add(ServerPacketType.ForceMoveOtherPlayer, PlayerManagementPacketHandler.HandleForceMoveOtherPlayer);
 
-        //Map functions for server telling us to force move characters into new locations
-        PacketHandlers.Add(ServerPacketType.ForceCharacterMove, PlayerManagementPacketHandler.HandleForceMovePlayer);
-        PacketHandlers.Add(ServerPacketType.ForceOtherCharacterMove, PlayerManagementPacketHandler.HandleForceMoveOtherPlayer);
-
-        PacketHandlers.Add(ServerPacketType.NewNextPacketNumber, SystemPacketHandler.HandleNewNextPacketNumber);
+        //System Packet Handlers
         PacketHandlers.Add(ServerPacketType.StillConnectedCheck, SystemPacketHandler.HandleStillConnectedCheck);
-        PacketHandlers.Add(ServerPacketType.ConnectionDeSync, SystemPacketHandler.HandleConnectionDeSync);
-        PacketHandlers.Add(ServerPacketType.MissingPacketsReply, SystemPacketHandler.HandleMissingPacketsReply);
-        PacketHandlers.Add(ServerPacketType.MissedPackets, SystemPacketHandler.HandleMissingPacketsRequest);
+        PacketHandlers.Add(ServerPacketType.MissingPacketsRequest, SystemPacketHandler.HandleMissingPacketsRequest);
         PacketHandlers.Add(ServerPacketType.KickedFromServer, SystemPacketHandler.HandleKickedFromServer);
     }
 
@@ -81,8 +75,14 @@ public class PacketHandler : MonoBehaviour
         int NewOrderNumber = NewPacket.ReadInt();
         int ExpectedOrderNumber = ConnectionManager.Instance.LastPacketRecieved + 1;
 
+        //If we ever receive a packet with an order number of -1 then that order number needs to be completely ignored and that packet needs to be processed immediately
+        if(NewOrderNumber == -1)
+        {
+            //Handle the packets data
+            HandlePacket(NewPacket);
+        }
         //If packets were missed then we need to let the server know, and then just wait until all the missing packets have been recieved
-        if(NewOrderNumber != ExpectedOrderNumber)
+        else if(NewOrderNumber != ExpectedOrderNumber)
         {
             //Add this packet that we have just now received into the WaitingToProcess dictionary, and mark it as being the NewestPacketWaitingToProcess while we wait for the rest
             WaitingToProcess.Add(NewOrderNumber, NewPacket);
@@ -90,7 +90,7 @@ public class PacketHandler : MonoBehaviour
             WaitingForMissingPackets = true;
 
             //Send an alert to the server, letting them know which packets need to be resent to us so we can catch up to them
-            SystemPacketSender.Instance.SendMissedPacketAlert(ExpectedOrderNumber);
+            SystemPacketSender.Instance.SendMissedPacketsRequest(ExpectedOrderNumber);
 
             //Keep track of the initial order number that we are waiting to receive back from the game server
             FirstMissingPacketNumber = ExpectedOrderNumber;
@@ -134,17 +134,8 @@ public class PacketHandler : MonoBehaviour
                             //Grab each packet from the dictionary
                             NetworkPacket PacketToProcess = WaitingToProcess[i];
 
-                            //Loop through all the data in this packet, passing each section of instructions onto its registered handler function
-                            while (!PacketToProcess.FinishedReading())
-                            {
-                                //Read this packets type identifier
-                                ServerPacketType ProcessingPacketType = PacketToProcess.ReadType();
-
-                                //Use this type to invoke the correct handler function
-                                if (PacketHandlers.TryGetValue(ProcessingPacketType, out Packet Packet))
-                                    Packet.Invoke(ref PacketToProcess);
-
-                            }
+                            //Handle the packets data
+                            HandlePacket(PacketToProcess);
                         }
 
                         //All the missing packets have now been processed, reset the dictionary, disable the flag and set the new value for next expected packet number
@@ -160,17 +151,20 @@ public class PacketHandler : MonoBehaviour
                 //Set this number as the last that was recieved from the server
                 ConnectionManager.Instance.LastPacketRecieved = NewOrderNumber;
 
-                //Loop through all of the data in this net packet, passing each section of instructions on to their registered handler function
-                while (!NewPacket.FinishedReading())
-                {
-                    //Read the next packet type value from the remaining packet data
-                    ServerPacketType PacketType = NewPacket.ReadType();
-
-                    //Use this enum value to invoke the packet handler function that is registered to this packet type
-                    if (PacketHandlers.TryGetValue(PacketType, out Packet Packet))
-                        Packet.Invoke(ref NewPacket);
-                }
+                //Handle the packets data
+                HandlePacket(NewPacket);
             }
+        }
+    }
+
+    //Read all the information from the given packet, passing each section on to its registered handler function
+    private void HandlePacket(NetworkPacket NewPacket)
+    {
+        while(!NewPacket.FinishedReading())
+        {
+            ServerPacketType PacketType = NewPacket.ReadType();
+            if (PacketHandlers.TryGetValue(PacketType, out Packet Packet))
+                Packet.Invoke(ref NewPacket);
         }
     }
 }

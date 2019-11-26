@@ -15,4 +15,5 @@ public class PrefabManager : MonoBehaviour
     //Prefab objects that can be used
     public GameObject LocalPlayerPrefab;
     public GameObject RemotePlayerPrefab;
+    public GameObject KickReasonPrefab;
 }

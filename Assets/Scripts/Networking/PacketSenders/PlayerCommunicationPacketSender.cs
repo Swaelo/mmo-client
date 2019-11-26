@@ -12,7 +12,10 @@ public class PlayerCommunicationPacketSender : MonoBehaviour
     public static PlayerCommunicationPacketSender Instance = null;
     void Awake() { Instance = this; }
 
-    //Sends a chat message to the game server to be shared with all other ingame clients
+    /// <summary>
+    /// //Sends a chat message to the game server to be shared with all other ingame clients
+    /// </summary>
+    /// <param name="Message">Message the user sent in the chat</param>
     public void SendChatMessage(string Message)
     {
         Log.Out("Chat Message");

@@ -12,7 +12,10 @@ public class GameWorldStatePacketSender : MonoBehaviour
     public static GameWorldStatePacketSender Instance = null;
     void Awake() { Instance = this; }
 
-    //Sends an alert to the game server letting them know we are now entering into the game world with a selected character
+    /// <summary>
+    /// //Sends an alert to the game server letting them know we are now entering into the game world with a selected character
+    /// </summary>
+    /// <param name="CharacterName">Name of the character the user wants to start playing with</param>
     public void SendEnterWorldAlert(string CharacterName)
     {
         Log.Out("Enter World Alert");
@@ -28,7 +31,9 @@ public class GameWorldStatePacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Sends an alert to the game server, letting them know we are ready and are now entering into the game world
+    /// <summary>
+    /// //Sends an alert to the game server, letting them know we are ready and are now entering into the game world
+    /// </summary>
     public void SendPlayerReadyAlert()
     {
         Log.Out("Player Ready Alert");
@@ -37,7 +42,7 @@ public class GameWorldStatePacketSender : MonoBehaviour
         NetworkPacket Packet = new NetworkPacket();
 
         //Write the relevant data values into the network packet
-        Packet.WriteType(ClientPacketType.NewPlayerReady);
+        Packet.WriteType(ClientPacketType.PlayerReadyAlert);
 
         //Add the new NetworkPacket to the outgoing packets queue
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);

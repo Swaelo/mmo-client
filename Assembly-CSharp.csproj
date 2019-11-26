@@ -83,6 +83,7 @@
     <Compile Include="Assets\Scripts\Interface\MenuUINavigation.cs" />
     <Compile Include="Assets\Scripts\Interface\UIButtonFunctions.cs" />
     <Compile Include="Assets\Scripts\Networking\ConnectionManager.cs" />
+    <Compile Include="Assets\Scripts\Networking\KickReason.cs" />
     <Compile Include="Assets\Scripts\Networking\NetworkPacket.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketHandler.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketHandlers\AccountManagementPacketHandler.cs" />
@@ -93,7 +94,6 @@
     <Compile Include="Assets\Scripts\Networking\PacketQueue.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\AccountManagementPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\GameWorldStatePacketSender.cs" />
-    <Compile Include="Assets\Scripts\Networking\PacketSenders\MiscellaneousPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerCommunicationPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerManagementPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\SystemPacketSender.cs" />

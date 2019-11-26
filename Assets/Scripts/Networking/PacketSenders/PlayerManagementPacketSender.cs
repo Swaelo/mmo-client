@@ -13,7 +13,10 @@ public class PlayerManagementPacketSender : MonoBehaviour
     public static PlayerManagementPacketSender Instance = null;
     void Awake() { Instance = this; }
 
-    //Sends the server our characters current position value
+    /// <summary>
+    /// //Sends the server our characters current position value
+    /// </summary>
+    /// <param name="CharacterPosition">The client characters updated position value being sent to the server</param>
     public void SendCharacterPosition(Vector3 CharacterPosition)
     {
         //Log a message showing what packet is being sent out
@@ -31,7 +34,10 @@ public class PlayerManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Sends the server our characters current rotation value
+    /// <summary>
+    /// //Sends the server our characters current rotation value
+    /// </summary>
+    /// <param name="CharacterRotation">The client characters updated rotation value being sent to the server</param>
     public void SendCharacterRotation(Quaternion CharacterRotation)
     {
         //Log a message showing what packet is being sent out
@@ -46,7 +52,10 @@ public class PlayerManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Sends the server our characters current movement value
+    /// <summary>
+    /// //Sends the server our characters current movement value
+    /// </summary>
+    /// <param name="CharacterMovement">The client characters updated movement input value being sent to the server</param>
     public void SendCharacterMovement(Vector3 CharacterMovement)
     {
         //Log a message showing what packet is being sent out
@@ -61,7 +70,12 @@ public class PlayerManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Gives the server our player cameras current Zoom and Rotation values
+    /// <summary>
+    /// //Gives the server our player cameras current Zoom and Rotation values
+    /// </summary>
+    /// <param name="CameraZoom">Client characters updated camera zoom level being sent to the server</param>
+    /// <param name="XRotation">Client characters updated camera XRotation value being sent to the server</param>
+    /// <param name="YRotation">Client characters updated camera YRotation value being sent to the server</param>
     public void SendPlayerCameraUpdate(float CameraZoom, float XRotation, float YRotation)
     {
         Log.Out("Camera Update");
@@ -70,26 +84,13 @@ public class PlayerManagementPacketSender : MonoBehaviour
         NetworkPacket Packet = new NetworkPacket();
 
         //Write all the relevant values into the packet
-        Packet.WriteType(ClientPacketType.CameraSettings);
+        Packet.WriteType(ClientPacketType.CharacterCameraUpdate);
         Packet.WriteString(GameState.Instance.CurrentCharacterName);
         Packet.WriteFloat(CameraZoom);
         Packet.WriteFloat(XRotation);
         Packet.WriteFloat(YRotation);
 
         //Add the packet to the queue
-        ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
-    }
-
-    //Tells the server we are unaware about a player character which we think should exist in the game world
-    public void SendUnknownCharacterAlert(string CharacterName)
-    {
-        //Log what we are doing
-        Log.Out("Unknown Character Alert: " + CharacterName);
-        //Fill a new NetworkPacket with data
-        NetworkPacket Packet = new NetworkPacket();
-        Packet.WriteType(ClientPacketType.RemotePlayerUnknown);
-        Packet.WriteString(CharacterName);
-        //Queue the packet for transmission
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 }

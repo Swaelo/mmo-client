@@ -35,7 +35,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
         }
     }
 
-    public static void HandleAccountRegisterReply(ref NetworkPacket Packet)
+    public static void HandleAccountRegistrationReply(ref NetworkPacket Packet)
     {
         Log.In("Account Registration Reply");
 

@@ -113,16 +113,6 @@ public class UIButtonFunctions : MonoBehaviour
         }
     }
 
-    //Logouts from the users account while in the character select screen, returning to the login screen
-    public void CharacterSelectLogoutButton()
-    {
-        //Change the menu panels over to the account login screen
-        InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
-        InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
-        //Let the server know we have logged out of this account
-        AccountManagementPacketSender.Instance.SendLogoutAlert();
-    }
-
     //Sends a request to the server to create a new player character
     public void CharacterCreationCreateButton()
     {

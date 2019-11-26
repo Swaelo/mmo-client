@@ -22,7 +22,7 @@ public class PlayerManager : MonoBehaviour
     /// </summary>
     /// <param name="PlayerName">The name of the character being added</param>
     /// <param name="PlayerLocation">The characters initial starting location</param>
-    public void AddRemotePlayer(string PlayerName, Vector3 PlayerLocation, Quaternion PlayerRotation)
+    public void AddRemotePlayer(string PlayerName, Vector3 PlayerLocation, Vector3 PlayerMovement, Quaternion PlayerRotation)
     {
         //Requests to add players we already know about should be ignored
         if (RemotePlayers.ContainsKey(PlayerName))
@@ -31,8 +31,11 @@ public class PlayerManager : MonoBehaviour
             return;
         }
 
-        //Spawn a new remote player object into the game world using the prefab manager
+        //Spawn a new remote player object into the game world using the prefab manager, make sure they are set at the right starting location
         GameObject RemotePlayer = GameObject.Instantiate(PrefabManager.Instance.RemotePlayerPrefab, PlayerLocation, PlayerRotation);
+        RemotePlayerController RemoteController = RemotePlayer.GetComponent<RemotePlayerController>();
+        RemoteController.UpdateAll(PlayerLocation, PlayerMovement, PlayerRotation);
+
         //Update the character name displayed above the new characters head
         TextMesh PlayerNameDisplay = RemotePlayer.transform.Find("Character Name").GetComponent<TextMesh>();
         PlayerNameDisplay.text = PlayerName;
@@ -78,37 +81,28 @@ public class PlayerManager : MonoBehaviour
     //Functions for update remote players Location/Rotation/Movement variables
     public void UpdateRemotePlayerPosition(string CharacterName, Vector3 NewLocation)
     {
-        //Check to make sure we are currently aware who the character is we should be updating
+        //Ignore this request if we dont know who the player is
         if (!RemotePlayers.ContainsKey(CharacterName))
-        {
-            //If we dont know who it is then let the server known, then exit out of the function
-            PlayerManagementPacketSender.Instance.SendUnknownCharacterAlert(CharacterName);
             return;
-        }
+
         //If we do know who this player is, then we simply give them their new values
         RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdatePosition(NewLocation);
     }
     public void UpdateRemotePlayerRotation(string CharacterName, Quaternion NewRotation)
     {
-        //Check to make sure we are currently aware who the character is we should be updating
+        //Ignore this request if we dont know who the player is
         if (!RemotePlayers.ContainsKey(CharacterName))
-        {
-            //If we dont know who it is then let the server known, then exit out of the function
-            PlayerManagementPacketSender.Instance.SendUnknownCharacterAlert(CharacterName);
             return;
-        }
+
         //If we do know who this player is, then we simply give them their new values
         RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdateRotation(NewRotation);
     }
     public void UpdateRemotePlayerMovement(string CharacterName, Vector3 NewMovement)
     {
-        //Check to make sure we are currently aware who the character is we should be updating
+        //Ignore this request if we dont know who the player is
         if (!RemotePlayers.ContainsKey(CharacterName))
-        {
-            //If we dont know who it is then let the server known, then exit out of the function
-            PlayerManagementPacketSender.Instance.SendUnknownCharacterAlert(CharacterName);
             return;
-        }
+
         //If we do know who this player is, then we simply give them their new values
         RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdateMovement(NewMovement);
     }

@@ -12,7 +12,11 @@ public class AccountManagementPacketSender : MonoBehaviour
     public static AccountManagementPacketSender Instance = null;
     void Awake() { Instance = this; }
 
-    //Sends a request to the game server to login to a user account
+    /// <summary>
+    /// //Sends a request to the game server to login to a user account
+    /// </summary>
+    /// <param name="Username">Account Username user is trying to log into</param>
+    /// <param name="Password">Account Password using is trying to log into</param>
     public void SendLoginRequest(string Username, string Password)
     {
         Log.Out("Account Login Request");
@@ -29,22 +33,11 @@ public class AccountManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Sends an alert to the game server letting them know we are logging out of our account
-    public void SendLogoutAlert()
-    {
-        Log.Out("Account Logout Alert");
-
-        //Create a new NetworkPacket object to store the data for this logout alert
-        NetworkPacket Packet = new NetworkPacket();
-
-        //Fill it with the relevant data
-        Packet.WriteType(ClientPacketType.AccountLogoutAlert);
-
-        //Add it to the outgoing packets queue
-        ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
-    }
-
-    //Sends a request to the game server to register a new user account
+    /// <summary>
+    /// //Sends a request to the game server to register a new user account
+    /// </summary>
+    /// <param name="Username">Account Username client is trying to register</param>
+    /// <param name="Password">Account Password client is trying to register</param>
     public void SendRegisterRequest(string Username, string Password)
     {
         Log.Out("Account Registration Request");
@@ -61,7 +54,9 @@ public class AccountManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Requests the game server to send us data about all characters that we own
+    /// <summary>
+    /// //Requests the game server to send us data about all characters that we own
+    /// </summary>
     public void SendCharacterDataRequest()
     {
         Log.Out("Character Data Request");
@@ -76,7 +71,10 @@ public class AccountManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
-    //Sends a request to the game server to create a new player character registered to our user account
+    /// <summary>
+    /// //Sends a request to the game server to create a new player character registered to our user account
+    /// </summary>
+    /// <param name="CharacterName">Name of character user is trying to create</param>
     public void SendCreateCharacterRequest(string CharacterName)
     {
         Log.Out("Character Creation Request");
