@@ -13,7 +13,14 @@ public class CameraManager : MonoBehaviour
     void Awake() { Instance = this; }
 
     //Camera references
-    public GameObject MainCamera;
+    public GameObject MainCamera = null;
+
+    private void Start()
+    {
+        if (MainCamera == null)
+            MainCamera = Camera.main.gameObject;
+    }
+
 
     public void ToggleMainCamera(bool ActiveStatus)
     {

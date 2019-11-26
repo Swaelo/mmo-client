@@ -50,6 +50,10 @@ public class PacketHandler : MonoBehaviour
         //Map player communication packet handlers into the dictionary
         PacketHandlers.Add(ServerPacketType.PlayerChatMessage, PlayerCommunicationPacketHandler.HandleChatMessage);
         PacketHandlers.Add(ServerPacketType.PlayerBegin, PlayerManagementPacketHandler.HandlePlayerBegin);
+
+        //Map functions for server telling us to force move characters into new locations
+        PacketHandlers.Add(ServerPacketType.ForceCharacterMove, PlayerManagementPacketHandler.HandleForceMovePlayer);
+        PacketHandlers.Add(ServerPacketType.ForceOtherCharacterMove, PlayerManagementPacketHandler.HandleForceMoveOtherPlayer);
     }
 
     //Reads in a packet sent from the server and passes it onto whatever handle function that packet type is mapped onto

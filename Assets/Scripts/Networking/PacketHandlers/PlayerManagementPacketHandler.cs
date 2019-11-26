@@ -96,4 +96,23 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
         PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
     }
+
+    //Server telling us to force move our character to a new location
+    public static void HandleForceMovePlayer(ref NetworkPacket Packet)
+    {
+        Log.In("Force Move Player");
+
+        Vector3 NewLocation = Packet.ReadVector3();
+        PlayerManager.Instance.UpdateLocalPlayerPosition(NewLocation);
+    }
+
+    //Server telling us to force move some other character to a new location
+    public static void HandleForceMoveOtherPlayer(ref NetworkPacket Packet)
+    {
+        Log.In("Force Move Other Player");
+
+        string CharacterName = Packet.ReadString();
+        Vector3 NewLocation = Packet.ReadVector3();
+        PlayerManager.Instance.UpdateRemotePlayerPosition(CharacterName, NewLocation);
+    }
 }

@@ -112,4 +112,9 @@ public class PlayerManager : MonoBehaviour
         //If we do know who this player is, then we simply give them their new values
         RemotePlayers[CharacterName].GetComponent<RemotePlayerController>().UpdateMovement(NewMovement);
     }
+
+    public void UpdateLocalPlayerPosition(Vector3 NewLocation)
+    {
+        LocalPlayer.transform.position = NewLocation;
+    }
 }

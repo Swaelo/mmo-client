@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Debug\BuildInfoWindow.cs" />
     <Compile Include="Assets\Scripts\Debug\DebugSettings.cs" />
+    <Compile Include="Assets\Scripts\Debug\FPSDisplay.cs" />
     <Compile Include="Assets\Scripts\Debug\MemoryMonitor.cs" />
     <Compile Include="Assets\Scripts\Finite State Machine\State.cs" />
     <Compile Include="Assets\Scripts\Finite State Machine\StateMachine.cs" />
