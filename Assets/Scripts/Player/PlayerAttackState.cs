@@ -32,7 +32,7 @@ public class PlayerAttackState : State
     {
         Controller.AnimatorComponent.SetTrigger("Attack");
         Controller.AnimatorComponent.SetBool("Attack2", false);
-        Controller.CurrentMovementVector = Vector3.zero;
+        Controller.NewMovementVector = Vector3.zero;
         StateTimeRemaining = StateTime;
         ContinueCombo = false;
         ComboPerformed = false;
@@ -63,11 +63,8 @@ public class PlayerAttackState : State
                 //First update the animator computer so it knows to transition out of any current attack animation immediately\
                 Controller.AnimatorComponent.SetTrigger("StopAttack");
 
-                //Computer how much horizontal distance the player has travelled so we know whether to transition between the idle or move state
-                float HorizontalMovement = Controller.GetHorizontalMovement();
-
                 //Transition to idle with no movement detected
-                if(HorizontalMovement < 0.01f)
+                if(Controller.MovementSinceLastUpdate < 0.01f)
                     Controller.Machine.SetState(GetComponent<PlayerIdleState>());
                 //Otherwise transition to move state
                 else
@@ -88,7 +85,7 @@ public class PlayerAttackState : State
     private void UpdateNoInput()
     {
         //Set empty movement vector in the character controller
-        Controller.CurrentMovementVector = Vector3.zero;
+        Controller.NewMovementVector = Vector3.zero;
 
         //Count down the state timer, when it runs out we need to either leave this state or continue the attack combo
         StateTimeRemaining -= Time.deltaTime;

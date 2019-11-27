@@ -81,8 +81,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Loading Characters Panel", false);
         InterfaceManager.Instance.SetObjectActive("Character Select Panel", true);
         
-
-        //Loop through and extract each charactesr information from the packet data
+        //Loop through and extract each characters information from the packet data
         for(int i = 0; i < CharacterCount; i++)
         {
             //Read from the packet data each characters name and location values

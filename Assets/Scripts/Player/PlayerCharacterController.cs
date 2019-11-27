@@ -9,13 +9,16 @@ using UnityEngine;
 public class PlayerCharacterController : MonoBehaviour
 {
     //Movement configuration variables
-    public float MoveSpeed = 5;         //How fast the player character moves around the game world
-    public float JumpHeight = 5;        //How high the player can jump
-    public float TurnSpeed = 300.0f;    //How fast the character rotates to face towards their target direction
+    private float MoveSpeed = 8f;         //How fast the player character moves around the game world
+    private float JumpHeight = 2f;        //How high the player can jump
+    private float TurnSpeed = 300f;    //How fast the character rotates to face towards their target direction
+
+    //Movement Variable Getters
+    public float GetJumpHeight() { return JumpHeight; }
 
     //Tracking falling velocity / when jumping is available etc.
     public float YVelocity = 0.0f;      //Updated with gravity/jump forces and applied to the characters MovementVector before applying it
-    public float FallSpeed = 0.1f;      //How much force is applied to the YVelocity while the character is falling to act as gravity
+    private float FallSpeed = 8f;      //How much force is applied to the YVelocity while the character is falling to act as gravity
     public bool IsGrounded = false;     //This is kept up to date at all times, and checked by various player states to allow jumping at times
 
     //Components which are often accessed and used during the different player states, these should be assigned through the inspector so they
@@ -25,21 +28,30 @@ public class PlayerCharacterController : MonoBehaviour
     public Animator AnimatorComponent;  //Various values and triggers are set during runtime to control the players animations
     public StateMachine Machine;    //StateMachine object used to manage the players current state and called upon to transition between them
 
-    //Store which values were previously broadcasted to the game server
-    private Vector3 LastPositionTransmission;
-    private Vector3 LastMovementTransmission;
-    private Quaternion LastRotationTransmission;
-    public Vector3 CurrentMovementVector = Vector3.zero;
+    //Sets a MovementVector to be applied to the character in the next LateUpdate function
+    public Vector3 NewMovementVector = Vector3.zero;
+    public string NewState;
+    public bool NewStateToTransition = false;
 
-    public Vector3 PreviousFramePosition;   //Used to computing distance travelled over time, passed to animation controller for state transition control
+    //Sets a new target rotation to be moved towards in the next LateUpdate function
+    public Quaternion NewRotation;
+    public bool QuaternionToApply = false;
+
+    //Used to calculate distance travelled over time, passed onto animation controller for idle/walk transitioning
+    public float MovementSinceLastUpdate = 0f;
+    private Vector3 PreviousXZ;
+
+    //How often to send our updated position/rotation/movement input values to the game server
+    private float PlayerUpdateInterval = 0.25f;
+    private float NextPlayerUpdate = 0.25f;
+    //Store which values were previously broadcasted to the game server
+    private Vector3 LastPositionUpdate = Vector3.zero;
+    private Vector3 LastMovementUpdate = Vector3.zero;
+    private Quaternion LastRotationUpdate = Quaternion.identity;
 
     public void Awake()
     {
-        //Assign some initial values to any member variables which need them
-        PreviousFramePosition = transform.position;
-        LastPositionTransmission = transform.position;
-        LastMovementTransmission = Vector3.zero;
-        LastRotationTransmission = transform.rotation;
+        PreviousXZ = new Vector3(transform.position.x, 0f, transform.position.z);
     }
 
     public void Update()
@@ -50,25 +62,63 @@ public class PlayerCharacterController : MonoBehaviour
         //Tell the state machine to update the current state
         Machine.GetCurrentState.StateUpdate();
 
-        //Store the position for next frames movement distance calculations
-        PreviousFramePosition = transform.position;
+        //Count down the timer for transmitting new values to the server
+        NextPlayerUpdate -= Time.deltaTime;
+        if(NextPlayerUpdate <= 0f)
+        {
+            //Reset the transmission timer
+            NextPlayerUpdate = PlayerUpdateInterval;
+
+            //Check if any values have changed since we last sent them to the game server
+            bool NewValues = LastPositionUpdate != transform.position ||
+                LastMovementUpdate != NewMovementVector ||
+                LastRotationUpdate != transform.rotation;
+
+            //Send our current values to the server if they have changed
+            if(NewValues)
+            {
+                //Send the current values
+                PlayerManagementPacketSender.Instance.SendLocalPlayerCharacterUpdate(transform.position, NewMovementVector, transform.rotation);
+
+                //Store them all as being those that were last sent to the server
+                LastPositionUpdate = transform.position;
+                LastMovementUpdate = NewMovementVector;
+                LastRotationUpdate = transform.rotation;
+            }
+        }
     }
 
-    //Checks all the current values and broadcasts any to the game server which have changed since last transmission
-    public void TransmitValues()
+    public void FixedUpdate()
     {
-        //Transmit all values if any of them have changed
-        if(LastPositionTransmission != transform.position ||
-            LastMovementTransmission != CurrentMovementVector ||
-            LastRotationTransmission != transform.rotation)
+        //Apply gravity to the movement vector if we arent touching the ground
+        if (!IsGrounded)
+            YVelocity -= FallSpeed * Time.fixedDeltaTime;
+        NewMovementVector.y += YVelocity;
+
+        //Apply movement vector if we have one to apply
+        ControllerComponent.Move(NewMovementVector * MoveSpeed * Time.fixedDeltaTime);
+
+        //Apply new rotation if we have one to apply
+        if (QuaternionToApply)
         {
-            //Send the new values to the server
-            PlayerManagementPacketSender.Instance.SendLocalPlayerCharacterUpdate(transform.position, CurrentMovementVector, transform.rotation);
-            //Store the sent values as the last ones transmitted
-            LastPositionTransmission = transform.position;
-            LastMovementTransmission = CurrentMovementVector;
-            LastRotationTransmission = transform.rotation;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, NewRotation, TurnSpeed * Time.fixedDeltaTime);
+            QuaternionToApply = false;
         }
+
+        //Transition to new state if we have one to move into
+        if (NewStateToTransition)
+        {
+            Machine.SetState(GetComponent<PlayerFallState>());
+            NewStateToTransition = false;
+        }
+
+        //Calculate and store distance moved since last time movement was applied
+        Vector3 CurrentXZ = new Vector3(transform.position.x, 0f, transform.position.z);
+        MovementSinceLastUpdate = Vector3.Distance(CurrentXZ, PreviousXZ);
+        PreviousXZ = CurrentXZ;
+
+        //Pass new movement distance value onto the animation controller
+        AnimatorComponent.SetFloat("Movement", MovementSinceLastUpdate);
     }
 
     //Shoots a raycast directly down from the players feet to check how far away the ground is to determine if they are falling or standing
@@ -79,7 +129,7 @@ public class PlayerCharacterController : MonoBehaviour
         {
             //If we hit something we need to see how far away it is, if its within a certain distance then we consider the character to be grounded
             float GroundDistance = Vector3.Distance(transform.position, GroundHit.point);
-            return GroundDistance <= 0.25f;
+            return GroundDistance <= 0.1f;
         }
 
         //The raycast only goes to a distance of 1 ingame unit, if it didnt hit anything at all then the character obviously isnt on the ground
@@ -87,7 +137,7 @@ public class PlayerCharacterController : MonoBehaviour
     }
 
     //Calculates a new movement vector for the character based on user input and the cameras current location
-    public Vector3 ComputeMovementVector(bool ApplyGravity = false) //Some states will want gravity to be applied while others wont
+    public Vector3 ComputeMovementVector() //Some states will want gravity to be applied while others wont
     {
         //First figure out what direction the X and Y movement axes should be based on the cameras position, this is so press W will
         //always move the character away from the camera, S will always move toward the camera etc.
@@ -97,39 +147,15 @@ public class PlayerCharacterController : MonoBehaviour
         //Now use these movement direction with player input to calculate a new movement vector for the player
         Vector3 MovementVector = Input.GetAxis("Horizontal") * MovementX + Input.GetAxis("Vertical") * MovementY;
 
-        //Apply the players current YVelocity value to the movement vector if we have been told to apply gravity to the movement vector
-        if(ApplyGravity)
-        {
-            YVelocity -= FallSpeed;
-            MovementVector.y += YVelocity;
-        }
-
-        //Store the movement vector
-        CurrentMovementVector = MovementVector;
-
         //Return the final movement vector that was calculated
         return MovementVector;
     }
 
-    public float GetHorizontalMovement()    //Calcualtes how much horizontal (X/Z axis) distance has been travelled since last frame
-    {
-        Vector3 CurrentPosition = new Vector3(transform.position.x, 0f, transform.position.z);
-        Vector3 PreviousPosition = new Vector3(PreviousFramePosition.x, 0f, PreviousFramePosition.z);
-        return Vector3.Distance(CurrentPosition, PreviousPosition);
-    }
-
     //Calculates a new movement vector for the character while ignoring all user input
-    public Vector3 ComputeIgnoredMovementVector(bool ApplyGravity = false)
+    public Vector3 ComputeIgnoredMovementVector()
     {
         //Start with an empty movement vector
         Vector3 MovementVector = Vector3.zero;
-
-        //Apply gravity to it if asked to
-        if(ApplyGravity)
-        {
-            YVelocity -= FallSpeed;
-            MovementVector.y += YVelocity;
-        }
 
         //retrun the final movement vector
         return MovementVector;

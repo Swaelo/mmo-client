@@ -9,22 +9,47 @@ using UnityEngine;
 
 public class PacketQueue
 {
-    private float CommunicationInterval = 0.25f; //How often the outgoing packets list will be emptied and transmitted to the server
-    private float NextCommunication = 0.25f; //Time remaining before the next communication interval occurs
+    private float CommunicationInterval = 0.1f; //How often the outgoing packets list will be emptied and transmitted to the server
+    private float NextCommunication = 0.1f; //Time remaining before the next communication interval occurs
     private List<NetworkPacket> OutgoingPackets;    //Current list of packets to be transmitted in the next communication interval
+    private List<NetworkPacket> SecondaryQueue; //Secondary queue where new packets are added to while the main queue is being used for transmission
+    private bool MainQueueInUse = false;    //Flag set so we know which queue to use when adding new packets to the queue
 
     //Default constructor
     public PacketQueue()
     {
         //Initialize the outgoing packets list
         OutgoingPackets = new List<NetworkPacket>();
+        SecondaryQueue = new List<NetworkPacket>();
     }
 
     //Adds a network packet to the outgoing queue
     public void QueuePacket(NetworkPacket NewPacket)
     {
+        //Check the value of the MainQueueInUse flag so we know where to queue new packets to
+        List<NetworkPacket> CurrentQueue = MainQueueInUse ? SecondaryQueue : OutgoingPackets;
+
         //Add the new packet to the outgoing queue
-        OutgoingPackets.Add(NewPacket);
+        CurrentQueue.Add(NewPacket);
+    }
+
+    //Adds a list of packets to the main queue
+    private void AddToMainQueue(List<NetworkPacket> Packets)
+    {
+        foreach (NetworkPacket Packet in Packets)
+            AddToMainQueue(Packet);
+    }
+
+    //Adds a packet to the main queue
+    private void AddToMainQueue(NetworkPacket Packet)
+    {
+        OutgoingPackets.Add(Packet);
+    }
+
+    //Adds a packet to the secondary queue
+    private void AddToSecondaryQueue(NetworkPacket Packet)
+    {
+        SecondaryQueue.Add(Packet);
     }
 
     //Automatically tracks the interval timer, resetting it and transmitting all queued packets every time it reaches zero
@@ -41,34 +66,28 @@ public class PacketQueue
     //Transmits all outgoing packets to the game server and resets the interval timer
     private void TransmitPackets()
     {
+        //Reset the secondary queue, then enable the flag so any new packets are added there for the time being
+        SecondaryQueue.Clear();
+        MainQueueInUse = true;
+
         //Reset the communication interval timer
         NextCommunication = CommunicationInterval;
 
-        //The data of every packet in the queue will be combined together into a single string
+        //Combine the data of every packet in the main queue into a single string
         string TotalData = "";
-
-        //Before we process all the packet data, theres new more information we want to add for the server beforehand
-        //If the user is currently active in the game world with one of their characters then we need to send queue its updated info before sending data to the game server
-        if (GameState.Instance.WorldEntered)
-        {
-            //First we want to transmit to the server any of the player characters values which have changed since last transmission
-            PlayerCharacterController PlayerController = GameObject.Find("Local Player(Clone)").GetComponent<PlayerCharacterController>();
-            PlayerController.TransmitValues();
-            //Second, we want to send the player cameras zoom/xrotation/yrotation values if they have changed since last transmission
-            PlayerCameraController PlayerCamera = GameObject.Find("Player Camera").GetComponent<PlayerCameraController>();
-            if (PlayerCamera.CameraSettingsChanged())
-                PlayerCamera.BroadcastCameraSettings();
-        }
-
-        //Loop through all the packets in the queue, append the data of each packet onto the end of our TotalData string
-        foreach(NetworkPacket Packet in OutgoingPackets)
+        foreach (NetworkPacket Packet in OutgoingPackets)
             TotalData += Packet.PacketData;
 
-        //If the final string actually contains some data then we can now transmit that to the game server
-        if(TotalData != "")
+        //Transmit this data to the server if it didnt end up still being empty
+        if (TotalData != "")
             ConnectionManager.Instance.SendPacket(TotalData);
 
-        //Reinitialize the outgoing packets queue as all their data has now been transmitted to the game server
-        OutgoingPackets = new List<NetworkPacket>();
+        //Reset the contents of the main queue, then copy anything in the secondary queue into the main queue
+        OutgoingPackets.Clear();
+        foreach (NetworkPacket Packet in SecondaryQueue)
+            OutgoingPackets.Add(Packet);
+
+        //Now disable the flag so new packets are again being added into the main queue
+        MainQueueInUse = false;
     }
 }

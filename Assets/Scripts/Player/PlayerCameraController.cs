@@ -35,10 +35,13 @@ public class PlayerCameraController : MonoBehaviour
     private float NewYRotation;
     private bool NewValuesToSet = false;
 
-    //Store what values were last broadcasted to the game server
-    private float LastDistanceTransmission;
-    private float LastXRotationTransmission;
-    private float LastYRotationTransmission;
+    //How often to send our updated camera values to the game server
+    private float CameraUpdateInterval = 5.0f;
+    private float NextCameraUpdate = 5.0f;
+    //Store which values were previously broadcasted to the game server
+    private float LastZoomUpdate = 0f;
+    private float LastXRotationUpdate = 0f;
+    private float LastYRotationUpdate = 0f;
 
     //Fetch and store the current camera rotation values when the scene first begins
     private void Start()
@@ -63,25 +66,31 @@ public class PlayerCameraController : MonoBehaviour
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
-    }
 
-    //Compares the current camera settings with those that were last broadcast to the server to see if any have changed
-    public bool CameraSettingsChanged()
-    {
-        return LastDistanceTransmission != CurrentCameraDistance ||
-            LastXRotationTransmission != CurrentXRotation ||
-            LastYRotationTransmission != CurrentYRotation;
-    }
+        //Count down the timer for transmitting new values to the server
+        NextCameraUpdate -= Time.deltaTime;
+        if(NextCameraUpdate <= 0f)
+        {
+            //Reset the transmission timer
+            NextCameraUpdate = CameraUpdateInterval;
 
-    //Sends out the current camera settings to the game server, then updates what values were previously sent out to it
-    public void BroadcastCameraSettings()
-    {
-        //Send the current camera settings to the game server
-        PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
-        //Update these as being the values which were last sent to the game server
-        LastDistanceTransmission = CurrentCameraDistance;
-        LastXRotationTransmission = CurrentXRotation;
-        LastYRotationTransmission = CurrentYRotation;
+            //Check if any values have changed since we last sent them to the game server
+            bool NewValues = LastZoomUpdate != CurrentCameraDistance ||
+                LastXRotationUpdate != CurrentXRotation ||
+                LastYRotationUpdate != CurrentYRotation;
+
+            //Send out current values to the server if they have changed
+            if(NewValues)
+            {
+                //Send the current values
+                PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
+
+                //Store them all as being those that were last sent to the server
+                LastZoomUpdate = CurrentCameraDistance;
+                LastXRotationUpdate = CurrentXRotation;
+                LastYRotationUpdate = CurrentYRotation;
+            }
+        }
     }
 
     private void LateUpdate()
@@ -94,11 +103,6 @@ public class PlayerCameraController : MonoBehaviour
             CurrentYRotation = NewYRotation;
             CurrentCameraDistance = NewCameraDistance;
             NewValuesToSet = false;
-
-            //Also just set these to be the values that were last sent to the game server
-            LastDistanceTransmission = NewCameraDistance;
-            LastXRotationTransmission = NewXRotation;
-            LastYRotationTransmission = NewYRotation;
         }
         //If not, then we just track user input to update camera values as normal
         else

@@ -49,8 +49,7 @@ public class PlayerFallState : State
         }
 
         //Fetch new movement vector for the player and store it in the character controller
-        Vector3 MovementVector = Controller.ComputeMovementVector(true);
-        Controller.CurrentMovementVector = MovementVector;
+        Controller.NewMovementVector = Controller.ComputeMovementVector();
 
         //Check if the player tries to perform a second jump if they havnt already
         if (!DoubleJumped && Input.GetKeyDown(KeyCode.Space))
@@ -60,22 +59,16 @@ public class PlayerFallState : State
             DoubleJumped = true;
 
             //Update the characters YVelocity and apply this to the movement vector to apply the new jump forces
-            Controller.YVelocity = Controller.JumpHeight;
-            MovementVector.y += Controller.YVelocity;
+            Controller.YVelocity = Controller.GetJumpHeight();
+            Controller.NewMovementVector.y += Controller.YVelocity;
         }
-
-        //Apply this movement vector to the player
-        Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);
 
         //Count down the statetimer, then once its depleted keep checking until the player hits the ground then transition out of the falling state
         StateTimeLeft -= Time.deltaTime;
         if (StateTimeLeft <= 0f && Controller.IsGrounded)
         {
-            //Compute how much horizontal distance the player has travelled so we know whether to transition between the idle or move state
-            float HorizontalMovement = Controller.GetHorizontalMovement();
-
             //Transition to idle with no movement detected
-            if (HorizontalMovement < 0.01f)
+            if (Controller.MovementSinceLastUpdate < 0.01f)
                 Controller.Machine.SetState(GetComponent<PlayerIdleState>());
             //Otherwise transition to move state
             else
@@ -86,21 +79,15 @@ public class PlayerFallState : State
         }
 
         //Calculate and lerp towards a new target rotation value to face towards the direction the player is moving in
-        Quaternion TargetRotation = Controller.ComputeTargetRotation(MovementVector);
+        Controller.NewRotation = Controller.ComputeTargetRotation(Controller.NewMovementVector);
         //Only apply the rotation if some movement was applied to the player
-        if (MovementVector.x != 0f || MovementVector.z != 0f)
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Controller.TurnSpeed * Time.deltaTime);
+        Controller.QuaternionToApply = (Controller.NewMovementVector.x != 0f || Controller.NewMovementVector.z != 0f);
     }
 
     private void UpdateNoInput()
     {
         //Fetch a new movement vector for the player ignoring all user input
-        Vector3 MovementVector = Controller.ComputeIgnoredMovementVector(true);
-        //Store the current movement vector in the character controller
-        Controller.CurrentMovementVector = MovementVector;
-
-        //Apply this movement to the character
-        Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);
+        Controller.NewMovementVector = Controller.ComputeIgnoredMovementVector();
 
         //Count down the timer restricting us from leaving this state to early
         StateTimeLeft -= Time.deltaTime;

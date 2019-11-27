@@ -37,19 +37,18 @@ public class PlayerMoveState : State
         }
 
         //Fetch a new movement vector to apply to the player and store it in the character controller
-        Vector3 MovementVector = Controller.ComputeMovementVector(false);
-        Controller.CurrentMovementVector = MovementVector;
+        Controller.NewMovementVector = Controller.ComputeMovementVector();
 
         //Adjust the characters YVelocity, apply it to the movement vector and transition to the falling state when they perform a jump action
         if (Input.GetKeyDown(KeyCode.Space))
         {
             //Update the characters YVelocity and apply that to our movement vector
-            Controller.YVelocity = Controller.JumpHeight;
-            MovementVector.y += Controller.YVelocity * Time.deltaTime;
+            Controller.YVelocity = Controller.GetJumpHeight();
+            Controller.NewMovementVector.y += Controller.YVelocity;
 
-            //Apply this movement vector to the player and transition to the fall state
-            Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);
-            Controller.Machine.SetState(GetComponent<PlayerFallState>());
+            //Set this movement vector to be applied, and the fall state to be transition into
+            Controller.NewState = "Fall";
+            Controller.NewStateToTransition = true;
 
             //Exit from this update function as we arent in this state anymore
             return;
@@ -65,15 +64,8 @@ public class PlayerMoveState : State
             return;
         }
 
-        //Apply movement to the character
-        Controller.ControllerComponent.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);
-
-        //Calculate how much distance the player has travelled and send that to the animator
-        float HorizontalMovement = Controller.GetHorizontalMovement();
-        Controller.AnimatorComponent.SetFloat("Movement", HorizontalMovement);
-
         //If the travel distance falls below a minimum amount then we transition to the idle state
-        if(HorizontalMovement < 0.01f)
+        if(Controller.MovementSinceLastUpdate < 0.01f)
         {
             //Return to the idle state
             Controller.Machine.SetState(GetComponent<PlayerIdleState>());
@@ -83,14 +75,14 @@ public class PlayerMoveState : State
         }
 
         //Calculate a new target rotation and lerp the player towards it so they face towards the direction they move
-        Quaternion TargetRotation = Controller.ComputeTargetRotation(MovementVector);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, TargetRotation, Controller.TurnSpeed * Time.deltaTime);
+        Controller.NewRotation = Controller.ComputeTargetRotation(Controller.NewMovementVector);
+        Controller.QuaternionToApply = true;
     }
 
     private void UpdateNoInput()
     {
         //Store empty movement vector in the character controller
-        Controller.CurrentMovementVector = Vector3.zero;
+        Controller.NewMovementVector = Vector3.zero;
         //Just transition to our idle state
         Controller.Machine.SetState(GetComponent<PlayerIdleState>());
     }

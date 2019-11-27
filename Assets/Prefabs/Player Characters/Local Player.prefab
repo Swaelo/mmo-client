@@ -702,19 +702,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 291576e87098263439c59a6d2e4f71a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 5
-  JumpHeight: 5
-  TurnSpeed: 300
+  MoveSpeed: 0.3
+  JumpHeight: 2
+  TurnSpeed: 800
   YVelocity: 0
-  FallSpeed: 0.1
+  FallSpeed: 0.035
   IsGrounded: 0
   CameraTransform: {fileID: 489528484874185958}
   ControllerComponent: {fileID: 489528485750118380}
   AnimatorComponent: {fileID: 489528485768567180}
   Machine: {fileID: 489528485750118381}
   CurrentMovementVector: {x: 0, y: 0, z: 0}
-  CurrentPlayerState: 0
   PreviousFramePosition: {x: 0, y: 0, z: 0}
+  NewMovementVector: {x: 0, y: 0, z: 0}
+  MovementVectorToApply: 0
+  NewState: 
+  NewStateToTransition: 0
 --- !u!1 &489528485761182272
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,7 +27,7 @@ public class PlayerManager : MonoBehaviour
         //Requests to add players we already know about should be ignored
         if (RemotePlayers.ContainsKey(PlayerName))
         {
-            Log.Chat("Ignoring request to add already known player " + PlayerName);
+            Log.Chat("Ignoring request to add already known player " + PlayerName, true);
             return;
         }
 
@@ -71,14 +71,11 @@ public class PlayerManager : MonoBehaviour
     {
         //Make sure this player exists in our game world before we try updating them
         if (RemotePlayers.ContainsKey(Name))
-        {
-            Log.Chat("Updating Remote Player: " + Name + " with new values.");
             RemotePlayers[Name].GetComponent<RemotePlayerController>().UpdateValues(Location, Movement, Rotation);
-        }
         //If we dont have this player in our world yet then we need to have them added now
         else
         {
-            Log.Chat("Adding Unknown Remote Player: " + Name + " to our game.");
+            Log.Chat("Received update for unknown player character, adding them into our game now.", true);
             AddRemotePlayer(Name, Location, Movement, Rotation);
         }
     }
