@@ -55,6 +55,7 @@ public class PlayerFallState : State
         if (!DoubleJumped && Input.GetKeyDown(KeyCode.Space))
         {
             //Update the animator to perform the flip animation and set the double jump flag so they cant jump again
+            PlayerManagementPacketSender.Instance.SendPlayAnimationAlert("Flip");
             Controller.AnimatorComponent.SetTrigger("DoubleJump");
             DoubleJumped = true;
 

@@ -60,4 +60,13 @@ public class PlayerManagementPacketSender : MonoBehaviour
         //Queue the packet for transmission
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
+
+    public void SendPlayAnimationAlert(string AnimationName)
+    {
+        Log.Out("Local Player Play Animation Alert");
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ClientPacketType.LocalPlayerPlayAnimationAlert);
+        Packet.WriteString(AnimationName);
+        ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
+    }
 }

@@ -30,6 +30,7 @@ public class PlayerAttackState : State
     //When first entering the Attack state, trigger the initial Attack animation and reset combo counting variables
     protected override void OnStateEnter()
     {
+        PlayerManagementPacketSender.Instance.SendPlayAnimationAlert("Attack");
         Controller.AnimatorComponent.SetTrigger("Attack");
         Controller.AnimatorComponent.SetBool("Attack2", false);
         Controller.NewMovementVector = Vector3.zero;
@@ -75,6 +76,7 @@ public class PlayerAttackState : State
             }
 
             //Otherwise reset the state timer and perform the next attack in the combo
+            PlayerManagementPacketSender.Instance.SendPlayAnimationAlert("Attack2");
             StateTimeRemaining = StateTime;
             ComboPerformed = true;  //Set this flag so the combo can only be performed once and not infinitely
             Controller.AnimatorComponent.SetBool("Attack2", true);

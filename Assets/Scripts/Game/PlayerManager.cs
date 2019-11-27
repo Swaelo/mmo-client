@@ -18,6 +18,33 @@ public class PlayerManager : MonoBehaviour
     public Dictionary<string, GameObject> RemotePlayers = new Dictionary<string, GameObject>();
 
     /// <summary>
+    /// Spawns a local player prefab into the game world
+    /// </summary>
+    /// <param name="PlayerLocation">World Location where the player will be spawned at</param>
+    public void AddLocalPlayer(Vector3 PlayerLocation, Quaternion PlayerRotation)
+    {
+        LocalPlayer = GameObject.Instantiate(PrefabManager.Instance.LocalPlayerPrefab, PlayerLocation, PlayerRotation);
+    }
+
+    /// <summary>
+    /// Removes the current local player object from the game world
+    /// </summary>
+    public void RemoveLocalPlayer()
+    {
+        GameObject.Destroy(LocalPlayer);
+        LocalPlayer = null;
+    }
+
+    /// <summary>
+    /// Updates our local player object with a new position
+    /// </summary>
+    /// <param name="Location">New position to apply to the local player character</param>
+    public void UpdateLocalPlayer(Vector3 Location)
+    {
+        LocalPlayer.transform.position = Location;
+    }
+
+    /// <summary>
     /// Spawns someone elses player character into our game world
     /// </summary>
     /// <param name="PlayerName">The name of the character being added</param>
@@ -80,30 +107,10 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Spawns a local player prefab into the game world
-    /// </summary>
-    /// <param name="PlayerLocation">World Location where the player will be spawned at</param>
-    public void AddLocalPlayer(Vector3 PlayerLocation, Quaternion PlayerRotation)
+    public void RemotePlayerPlayAnimation(string CharacterName, string AnimationName)
     {
-        LocalPlayer = GameObject.Instantiate(PrefabManager.Instance.LocalPlayerPrefab, PlayerLocation, PlayerRotation);
-    }
-
-    /// <summary>
-    /// Removes the current local player object from the game world
-    /// </summary>
-    public void RemoveLocalPlayer()
-    {
-        GameObject.Destroy(LocalPlayer);
-        LocalPlayer = null;
-    }
-
-    /// <summary>
-    /// Updates our local player object with a new position
-    /// </summary>
-    /// <param name="Location">New position to apply to the local player character</param>
-    public void UpdateLocalPlayer(Vector3 Location)
-    {
-        LocalPlayer.transform.position = Location;
+        //Make sure this player exists in our game world before we try triggering their animation playback
+        if (RemotePlayers.ContainsKey(CharacterName))
+            RemotePlayers[CharacterName].GetComponent<Animator>().SetTrigger(AnimationName);
     }
 }

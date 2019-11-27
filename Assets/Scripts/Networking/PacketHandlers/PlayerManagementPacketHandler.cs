@@ -80,4 +80,12 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
         PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
     }
+
+    public static void HandleRemotePlayerPlayAnimation(ref NetworkPacket Packet)
+    {
+        Log.In("Remote Player Play Animation");
+        string CharacterName = Packet.ReadString();
+        string AnimationName = Packet.ReadString();
+        PlayerManager.Instance.RemotePlayerPlayAnimation(CharacterName, AnimationName);
+    }
 }

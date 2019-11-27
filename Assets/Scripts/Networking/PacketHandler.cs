@@ -54,6 +54,7 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.AddRemotePlayer, PlayerManagementPacketHandler.HandleAddRemotePlayer);
         PacketHandlers.Add(ServerPacketType.RemoveRemotePlayer, PlayerManagementPacketHandler.HandleRemoveRemotePlayer);
         PacketHandlers.Add(ServerPacketType.AllowPlayerBegin, PlayerManagementPacketHandler.HandleAllowPlayerBegin);
+        PacketHandlers.Add(ServerPacketType.RemotePlayerPlayAnimationAlert, PlayerManagementPacketHandler.HandleRemotePlayerPlayAnimation);
 
         //System Packet Handlers
         PacketHandlers.Add(ServerPacketType.StillConnectedCheck, SystemPacketHandler.HandleStillConnectedCheck);
