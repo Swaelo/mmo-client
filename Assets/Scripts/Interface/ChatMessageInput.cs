@@ -45,7 +45,7 @@ public class ChatMessageInput : MonoBehaviour
         {
             PlayerCommunicationPacketSender.Instance.SendChatMessage(ChatMessage);
             //Also display the users message in their own chat log too
-            Log.Chat(GameState.Instance.CurrentCharacterName + ": " + ChatMessage);
+            Log.Chat(GameState.Instance.SelectedCharacter.Name + ": " + ChatMessage);
         }
 
         //Input field needs to be deactivated so the user is able to control their player once again

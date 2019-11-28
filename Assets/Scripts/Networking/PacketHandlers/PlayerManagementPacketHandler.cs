@@ -65,20 +65,20 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         InterfaceManager.Instance.SetObjectActive("Entering World Panel", false);
         CameraManager.Instance.ToggleMainCamera(false);
 
-        //Get the current character index freom the GameState object, use that to fetch our position/rotation then spawn into the game world with those values
-        GameState GS = GameState.Instance;
-        GS.WorldEntered = true;
-        int CharacterIndex = GS.SelectedCharacter - 1;
-        Vector3 SpawnLocation = GS.CharacterPositions[CharacterIndex];
-        Quaternion SpawnRotation = GS.CharacterRotations[CharacterIndex];
-        PlayerManager.Instance.AddLocalPlayer(SpawnLocation, SpawnRotation);
+        //Get the current character index from the GameState object, use that to fetch our position/rotation then spawn into the game world with those values
+        GameState GameState = GameState.Instance;
+        GameState.WorldEntered = true;
+        PlayerManager.Instance.AddLocalPlayer(GameState.SelectedCharacter.Position, GameState.SelectedCharacter.Rotation);
 
         //Fetch the current zoom/rotation values of the players camera, set the camera to these values then enable camera state broadcasting
-        float CameraZoom = GS.CameraZoomLevels[CharacterIndex];
-        float CameraXRotation = GS.CameraXRotationValues[CharacterIndex];
-        float CameraYRotation = GS.CameraYRotationValues[CharacterIndex];
+        float CameraZoom = GameState.SelectedCharacter.CameraZoom;
+        float CameraXRotation = GameState.SelectedCharacter.CameraXRotation;
+        float CameraYRotation = GameState.SelectedCharacter.CameraYRotation;
         GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
         PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
+
+        //Log the selected characters current and maxmimum health values to see if they were loaded correctly
+        Log.Chat("Current Health: " + GameState.SelectedCharacter.CurrentHealth + ", Max Health: " + GameState.SelectedCharacter.MaxHealth, true);
     }
 
     public static void HandleRemotePlayerPlayAnimation(ref NetworkPacket Packet)

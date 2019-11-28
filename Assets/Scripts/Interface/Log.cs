@@ -9,7 +9,7 @@ using UnityEngine;
 
 public static class Log
 {
-    public static void Chat(string Message, bool PrintConsole = false)
+    public static void Chat(string Message, bool PrintConsole = true)
     {
         ChatWindowManager.Instance.DisplayMessage(Message);
         

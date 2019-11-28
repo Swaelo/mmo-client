@@ -6,6 +6,7 @@
 // ================================================================================================================================
 
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GameState : MonoBehaviour
 {
@@ -13,18 +14,15 @@ public class GameState : MonoBehaviour
     public static GameState Instance = null;
     void Awake() { Instance = this; }
 
-    //Current user account and player character information
     public string AccountName = ""; //Which account the user is currently logged into
-    public int SelectedCharacter = 0;   //Which character slot is currently being used
-    public string[] CharacterNames = { "", "", "" };    //The names of characters existing under the current user account
-    public Vector3[] CharacterPositions = { Vector3.zero, Vector3.zero, Vector3.zero }; //The positions of characters existing under the current user account
-    public Quaternion[] CharacterRotations = { Quaternion.identity, Quaternion.identity, Quaternion.identity }; //The rotations of characters existing under this users account
-    public float[] CameraZoomLevels = { 0f, 0f, 0f };   //The current camera zoom levels of the characters in this users account
-    public float[] CameraXRotationValues = { 0f, 0f, 0f }; //The current camera x rotation values of the characters in this users account
-    public float[] CameraYRotationValues = { 0f, 0f, 0f }; //The current camera y rotation values of the characters in this users account
-    public string CurrentCharacterName = "";
-    public Vector3 CurrentCharacterPosition;
-    public Quaternion CurrentCharacterRotation;
+
+    //Store data for up to three characters in the users account
+    public CharacterData FirstCharacter = new CharacterData();
+    public CharacterData SecondCharacter = new CharacterData();
+    public CharacterData ThirdCharacter = new CharacterData();
+
+    //Track which character is currently selected for use
+    public CharacterData SelectedCharacter = null;
 
     //Tracks which values have been loaded in before we are reading to enter into the game world
     public bool PlayerListLoaded = false;

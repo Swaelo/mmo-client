@@ -63,47 +63,53 @@ public class AccountManagementPacketHandler : MonoBehaviour
 
     public static void HandleCharacterDataReply(ref NetworkPacket Packet)
     {
-        Log.In("Character Data Reply");
+        //Log what we are doing here
+        Log.In("Handling Character Data Reply.");
 
-        //Read the number of characters existing in our account
+        //Read the number of characters data that has been sent to us
         int CharacterCount = Packet.ReadInt();
 
-        //If there arent any characters in our account then we proceed to the character creation screen
+        //If there arent any characters in our account then we proceed straight to the character creation screen
         if(CharacterCount == 0)
         {
             InterfaceManager.Instance.SetObjectActive("Loading Characters Panel", false);
             InterfaceManager.Instance.SetObjectActive("Character Create Panel", true);
-            
             return;
         }
 
-        //Otherwise we move on to the character select screen, and update it to show information of our existing characters
+        //Otherwise we move on to the character select screen
         InterfaceManager.Instance.SetObjectActive("Loading Characters Panel", false);
         InterfaceManager.Instance.SetObjectActive("Character Select Panel", true);
-        
-        //Loop through and extract each characters information from the packet data
+
+        //Loop through and read the data of each character provided
         for(int i = 0; i < CharacterCount; i++)
         {
-            //Read from the packet data each characters name and location values
-            string CharacterName = Packet.ReadString();
-            Vector3 CharacterPosition = Packet.ReadVector3();
-            Quaternion CharacterRotation = Packet.ReadQuaternion();
-            float CameraZoom = Packet.ReadFloat();
-            float CameraXRotation = Packet.ReadFloat();
-            float CameraYRotation = Packet.ReadFloat();
+            //Create and store each characters info into a new CharacterData object
+            CharacterData Data = new CharacterData();
+            Data.Name = Packet.ReadString();
+            Data.Position = Packet.ReadVector3();
+            Data.Rotation = Packet.ReadQuaternion();
+            Data.CameraZoom = Packet.ReadFloat();
+            Data.CameraXRotation = Packet.ReadFloat();
+            Data.CameraYRotation = Packet.ReadFloat();
+            Data.CurrentHealth = Packet.ReadInt();
+            Data.MaxHealth = Packet.ReadInt();
 
-            //Store the values of all of our existing characters in our connection manager object
-            GameState GS = GameState.Instance;
-            GS.CharacterNames[i] = CharacterName;
-            GS.CharacterPositions[i] = CharacterPosition;
-            GS.CharacterRotations[i] = CharacterRotation;
-            GS.CameraZoomLevels[i] = CameraZoom;
-            GS.CameraXRotationValues[i] = CameraXRotation;
-            GS.CameraYRotationValues[i] = CameraYRotation;
+            //Store each characters data to be accessed later
+            if (i == 0)
+                GameState.Instance.FirstCharacter = Data;
+            else if (i == 1)
+                GameState.Instance.SecondCharacter = Data;
+            else
+                GameState.Instance.ThirdCharacter = Data;
 
-            //Update the character select screen to display this characters information
-            string InfoObjectName = "Character Info " + (i+1);
-            GameObject.Find(InfoObjectName).GetComponent<Text>().text = CharacterName;
+            //Set each character as selectable from the character select screen
+            string InfoObjectName = "Character Info " + (i + 1);
+            GameObject InfoObject = GameObject.Find(InfoObjectName);
+            if (InfoObject == null)
+                Log.Chat("Unable to find " + InfoObjectName);
+            else
+                InfoObject.GetComponent<Text>().text = Data.Name;
         }
     }
 

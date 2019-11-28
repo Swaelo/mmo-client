@@ -92,10 +92,13 @@ public class UIButtonFunctions : MonoBehaviour
     public void CharacterSelectButton(int CharacterSlot)
     {
         //Store which character they tried to select
-        GameState.Instance.SelectedCharacter = CharacterSlot;
+        GameState.Instance.SelectedCharacter =
+            CharacterSlot == 1 ? GameState.Instance.FirstCharacter :
+            CharacterSlot == 2 ? GameState.Instance.SecondCharacter :
+            GameState.Instance.ThirdCharacter;
 
         //If no character exists in this slot then go to the character creation screen
-        if(GameState.Instance.CharacterNames[CharacterSlot-1] == "")
+        if(GameState.Instance.SelectedCharacter.Name == "")
         {
             InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
             InterfaceManager.Instance.SetObjectActive("Character Create Panel", true);
@@ -105,10 +108,7 @@ public class UIButtonFunctions : MonoBehaviour
         {
             InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
             InterfaceManager.Instance.SetObjectActive("Entering World Panel", true);
-            GameState.Instance.CurrentCharacterName = GameState.Instance.CharacterNames[CharacterSlot-1];
-            GameState.Instance.CurrentCharacterPosition = GameState.Instance.CharacterPositions[CharacterSlot-1];
-            GameState.Instance.CurrentCharacterRotation = GameState.Instance.CharacterRotations[CharacterSlot - 1];
-            GameWorldStatePacketSender.Instance.SendEnterWorldAlert(GameState.Instance.CurrentCharacterName);
+            GameWorldStatePacketSender.Instance.SendEnterWorldAlert(GameState.Instance.SelectedCharacter.Name);
             //We will wait in the entering world panel until we have finished recieving and processing all the game world state data from the server
         }
     }

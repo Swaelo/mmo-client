@@ -98,6 +98,7 @@
     <Compile Include="Assets\Scripts\Networking\PacketSenders\PlayerManagementPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketSenders\SystemPacketSender.cs" />
     <Compile Include="Assets\Scripts\Networking\PacketTypes.cs" />
+    <Compile Include="Assets\Scripts\Player\CharacterData.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttackState.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerCameraController.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerCharacterController.cs" />

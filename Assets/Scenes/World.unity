@@ -6308,8 +6308,8 @@ Transform:
   m_Children:
   - {fileID: 4612979451216061275}
   - {fileID: 4612979450960929663}
-  m_Father: {fileID: 4612979451707077873}
-  m_RootOrder: 0
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4612979450738705422
 MonoBehaviour:
@@ -7600,8 +7600,8 @@ RectTransform:
   - {fileID: 4612979451042477510}
   - {fileID: 4612979452057564312}
   - {fileID: 4612979451393043699}
-  m_Father: {fileID: 4612979451707077873}
-  m_RootOrder: 2
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -9300,8 +9300,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 4612979451707077873}
-  m_RootOrder: 3
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4612979451203827396
 GameObject:
@@ -13043,11 +13043,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 4612979450738705409}
-  - {fileID: 4612979452034142131}
-  - {fileID: 4612979450873023634}
-  - {fileID: 4612979451203827395}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -13064,34 +13060,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AccountName: 
-  SelectedCharacter: 0
-  CharacterNames:
-  - 
-  - 
-  - 
-  CharacterPositions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  CharacterRotations:
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  CameraZoomLevels:
-  - 0
-  - 0
-  - 0
-  CameraXRotationValues:
-  - 0
-  - 0
-  - 0
-  CameraYRotationValues:
-  - 0
-  - 0
-  - 0
-  CurrentCharacterName: 
-  CurrentCharacterPosition: {x: 0, y: 0, z: 0}
-  CurrentCharacterRotation: {x: 0, y: 0, z: 0, w: 0}
   PlayerListLoaded: 0
   EntityListLoaded: 0
   ItemListLoaded: 0
@@ -14626,7 +14594,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: InDev:16
+  m_Text: InDev:18
 --- !u!222 &4612979451864593661
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -15533,8 +15501,8 @@ Transform:
   m_LocalPosition: {x: 441.16965, y: 265.16162, z: -412.125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 4612979451707077873}
-  m_RootOrder: 1
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4612979452034142133
 GameObject:
