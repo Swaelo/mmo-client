@@ -23,10 +23,4 @@ public class CharacterData
     public int ExperienceToLevel = 100;   //Amount of EXP needed to reach the next level
     public int Level = 1;   //Current level
     public bool IsMale = true; //Is the character male
-
-    public void PrintData()
-    {
-        Log.Chat("CHARACTERDATA: " + Name + ", level " + Level + ". " + CurrentHealth + "/" + MaxHealth + " HP, at " + Position);
-        Log.Chat("Rotated: " + Rotation + ", moving " + Movement + ". Zoomed " + CameraZoom + " XYRot:" + CameraXRotation + "/" + CameraYRotation);
-    }
 }

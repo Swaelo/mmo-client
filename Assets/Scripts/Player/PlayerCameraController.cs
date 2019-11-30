@@ -137,6 +137,13 @@ public class PlayerCameraController : MonoBehaviour
     //Track the mouse scrollwheel and use that to change the cameras zoom level
     private void ZoomCamera()
     {
+        //Check if the mouse is currently hovering over the chat window
+        if(ChatWindowCursorTracker.IsMouseOverChat)
+        {
+            //Ignore any input for zooming the camera while the mouse is over the chat window
+            return;
+        }
+
         //Scrolling the mouse wheel adjusts the current distance between the camera and the player allowing you to zoom in and out
         float CameraZoomAdjustment = Input.GetAxis("Mouse ScrollWheel");
         float TargetCameraDistance = CurrentCameraDistance - CameraZoomAdjustment * 5f;

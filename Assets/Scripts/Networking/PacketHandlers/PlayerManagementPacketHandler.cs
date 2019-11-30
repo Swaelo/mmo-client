@@ -92,9 +92,6 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
         PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
 
-        //Log the players values the moment we are given control of it
-        GameState.SelectedCharacter.PrintData();
-
         //Log the selected characters current and maxmimum health values to see if they were loaded correctly
         Log.Chat("Current Health: " + GameState.SelectedCharacter.CurrentHealth + ", Max Health: " + GameState.SelectedCharacter.MaxHealth, true);
     }
