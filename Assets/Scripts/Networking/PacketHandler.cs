@@ -50,6 +50,8 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.PlayerChatMessage, PlayerCommunicationPacketHandler.HandleChatMessage);
 
         //Player Management Packet Handlers
+        PacketHandlers.Add(ServerPacketType.TeleportLocalPlayer, PlayerManagementPacketHandler.HandleTeleportLocalPlayer);
+        PacketHandlers.Add(ServerPacketType.TeleportRemotePlayer, PlayerManagementPacketHandler.HandleTeleportRemotePlayer);
         PacketHandlers.Add(ServerPacketType.UpdateRemotePlayer, PlayerManagementPacketHandler.HandleUpdateRemotePlayer);
         PacketHandlers.Add(ServerPacketType.AddRemotePlayer, PlayerManagementPacketHandler.HandleAddRemotePlayer);
         PacketHandlers.Add(ServerPacketType.RemoveRemotePlayer, PlayerManagementPacketHandler.HandleRemoveRemotePlayer);

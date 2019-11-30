@@ -12,7 +12,6 @@ public class SystemPacketHandler : MonoBehaviour
     //Every few seconds the server will ask us if we are still connected to see that we havnt timed out
     public static void HandleStillConnectedCheck(ref NetworkPacket Packet)
     {
-        Log.In("Still Connected Check");
         SystemPacketSender.Instance.SendStillConnectedReply();
     }
 

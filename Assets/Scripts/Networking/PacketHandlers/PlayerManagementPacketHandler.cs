@@ -12,6 +12,21 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     public static PlayerManagementPacketHandler Instance = null;
     void Awake() { Instance = this; }
 
+    public static void HandleTeleportLocalPlayer(ref NetworkPacket Packet)
+    {
+        Log.In("Handle Teleport Local Player");
+        Vector3 Position = Packet.ReadVector3();
+        PlayerManager.Instance.TeleportLocalPlayer(Position);
+    }
+
+    public static void HandleTeleportRemotePlayer(ref NetworkPacket Packet)
+    {
+        Log.In("Handle Teleport Remote Player");
+        string Name = Packet.ReadString();
+        Vector3 Position = Packet.ReadVector3();
+        PlayerManager.Instance.TeleportRemotePlayer(Name, Position);
+    }
+
     public static void HandleUpdateRemotePlayer(ref NetworkPacket Packet)
     {
         //Log what we are doing here
@@ -76,6 +91,9 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         float CameraYRotation = GameState.SelectedCharacter.CameraYRotation;
         GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
         PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
+
+        //Log the players values the moment we are given control of it
+        GameState.SelectedCharacter.PrintData();
 
         //Log the selected characters current and maxmimum health values to see if they were loaded correctly
         Log.Chat("Current Health: " + GameState.SelectedCharacter.CurrentHealth + ", Max Health: " + GameState.SelectedCharacter.MaxHealth, true);

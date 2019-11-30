@@ -33,6 +33,14 @@ public class AccountManagementPacketSender : MonoBehaviour
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 
+    public void SendLogoutAlert()
+    {
+        Log.Out("Account Logout Alert");
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ClientPacketType.AccountLogoutAlert);
+        ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
+    }
+
     /// <summary>
     /// //Sends a request to the game server to register a new user account
     /// </summary>

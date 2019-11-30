@@ -84,6 +84,14 @@ public class RemotePlayerController : MonoBehaviour
         PreviousFramePosition = transform.position;
     }
 
+    //Teleports the remote player to a new location
+    public void TeleportPlayer(Vector3 Position)
+    {
+        transform.position = Position;
+        ServerSidePosition = Position;
+        ServerSideMovement = Vector3.zero;
+    }
+
     //Updates the remote player with new values passed in
     public void UpdateValues(Vector3 NewPosition, Vector3 NewMovement, Quaternion NewRotation)
     {

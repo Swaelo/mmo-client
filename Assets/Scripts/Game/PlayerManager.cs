@@ -17,6 +17,28 @@ public class PlayerManager : MonoBehaviour
     public GameObject LocalPlayer = null;
     public Dictionary<string, GameObject> RemotePlayers = new Dictionary<string, GameObject>();
 
+    public void TeleportLocalPlayer(Vector3 Position)
+    {
+        //Get camera offset so we can move it to the right spot after the player
+        PlayerCharacterController CharacterController = LocalPlayer.GetComponent<PlayerCharacterController>();
+        Vector3 Offset = transform.position - CharacterController.CameraTransform.position;
+        //Move the player to its new target, then the camera offset from that
+        LocalPlayer.transform.position = Position;
+        CharacterController.CameraTransform.position = Position + Offset;
+    }
+
+    public void TeleportRemotePlayer(string Name, Vector3 Position)
+    {
+        if (!RemotePlayers.ContainsKey(Name))
+        {
+            Log.Chat("Recieved instructions to teleport character we dont know about, creating them their instead.");
+            AddRemotePlayer(Name, Position, Vector3.zero, Quaternion.identity);
+            return;
+        }
+
+        RemotePlayers[Name].GetComponent<RemotePlayerController>().TeleportPlayer(Position);
+    }
+
     /// <summary>
     /// Spawns a local player prefab into the game world
     /// </summary>

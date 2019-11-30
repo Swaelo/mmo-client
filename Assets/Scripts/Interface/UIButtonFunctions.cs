@@ -88,6 +88,14 @@ public class UIButtonFunctions : MonoBehaviour
         
     }
 
+    //Returns from the character select screen back to the account login screen and tells the server we have logged out of our account
+    public void CharacterSelectLogoutButton()
+    {
+        InterfaceManager.Instance.SetObjectActive("Character Select Panel", false);
+        InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
+        AccountManagementPacketSender.Instance.SendLogoutAlert();
+    }
+
     //Selects the clicked character slot from the character select screen
     public void CharacterSelectButton(int CharacterSlot)
     {
@@ -131,6 +139,5 @@ public class UIButtonFunctions : MonoBehaviour
     {
         InterfaceManager.Instance.SetObjectActive("Character Create Panel", false);
         InterfaceManager.Instance.SetObjectActive("Character Select Panel", true);
-        
     }
 }
