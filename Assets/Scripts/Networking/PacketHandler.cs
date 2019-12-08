@@ -16,19 +16,27 @@ public class PacketHandler : MonoBehaviour
     public delegate void Packet(ref NetworkPacket Packet);
     public Dictionary<ServerPacketType, Packet> PacketHandlers;
 
-    //If we fall behind the server, we need to store any later packets in the dictionary until we recieve the ones that are missing
-    public Dictionary<int, NetworkPacket> WaitingToProcess = new Dictionary<int, NetworkPacket>();
-    private bool WaitingForMissingPackets = false;    //Set when we detect we have missed some packets, once they have been recieved we
-    //can then process them, along with any else that have been added into the WaitingToProcess list in order to become caught up again
-    public int FirstMissingPacketNumber; //The packet order number of the first missing packet that we are currently waiting for
-    public int NewestPacketWaitingToProcess;    //The order number of the newest packet we have received that is waiting for be processed
-    //once we have finished receiving all the packets missing in between
+    //If we fall behind the server we need to tell it what packets we missed then wait for them to be sent back to us
+    private bool WaitingForMissingPackets = false;
+    //Whenever any packets arrive ahead of schedule they are added here to kept until they can be processed later
+    private Dictionary<int, NetworkPacket> WaitingToProcess = new Dictionary<int, NetworkPacket>();
+    //The packet numbers that we are waiting for containing all the previously missed packages when we fall behind
+    public int FirstMissingPacketNumber, LastMissingPacketNumber;
+    //The newest packet that has arrived ahead of schedule while we have been waiting for the missing packets to arrive
+    public int NewestPacketWaitingToProcess;
+    private List<int> MissingPacketNumbers = new List<int>();
 
     private void Awake()
     {
         //Assign the singleton class instance
         Instance = this;
 
+        //Register all the packet readers and handlers
+        RegisterPacketHandlers();
+    }
+
+    private void RegisterPacketHandlers()
+    {
         //Create a new dictionary to store all the packet handler functions
         PacketHandlers = new Dictionary<ServerPacketType, Packet>();
 
@@ -50,8 +58,6 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.PlayerChatMessage, PlayerCommunicationPacketHandler.HandleChatMessage);
 
         //Player Management Packet Handlers
-        PacketHandlers.Add(ServerPacketType.TeleportLocalPlayer, PlayerManagementPacketHandler.HandleTeleportLocalPlayer);
-        PacketHandlers.Add(ServerPacketType.TeleportRemotePlayer, PlayerManagementPacketHandler.HandleTeleportRemotePlayer);
         PacketHandlers.Add(ServerPacketType.UpdateRemotePlayer, PlayerManagementPacketHandler.HandleUpdateRemotePlayer);
         PacketHandlers.Add(ServerPacketType.AddRemotePlayer, PlayerManagementPacketHandler.HandleAddRemotePlayer);
         PacketHandlers.Add(ServerPacketType.RemoveRemotePlayer, PlayerManagementPacketHandler.HandleRemoveRemotePlayer);
@@ -62,108 +68,197 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.StillConnectedCheck, SystemPacketHandler.HandleStillConnectedCheck);
         PacketHandlers.Add(ServerPacketType.MissingPacketsRequest, SystemPacketHandler.HandleMissingPacketsRequest);
         PacketHandlers.Add(ServerPacketType.KickedFromServer, SystemPacketHandler.HandleKickedFromServer);
+
+        //Combat Packet Handlers
+        PacketHandlers.Add(ServerPacketType.LocalPlayerTakeHit, CombatPacketHandler.HandleLocalPlayerTakeHit);
+        PacketHandlers.Add(ServerPacketType.RemotePlayerTakeHit, CombatPacketHandler.HandleRemotePlayerTakeHit);
+        PacketHandlers.Add(ServerPacketType.LocalPlayerDead, CombatPacketHandler.HandleLocalPlayerDead);
+        PacketHandlers.Add(ServerPacketType.RemotePlayerDead, CombatPacketHandler.HandleRemotePlayerDead);
+        PacketHandlers.Add(ServerPacketType.LocalPlayerRespawn, CombatPacketHandler.HandleLocalPlayerRespawn);
+        PacketHandlers.Add(ServerPacketType.RemotePlayerRespawn, CombatPacketHandler.HandleRemotePlayerRespawn);
+    }
+
+    private NetworkPacket ReadPacketValues(ServerPacketType PacketType, NetworkPacket ReadFrom)
+    {
+        switch (PacketType)
+        {
+            //Account Management
+            case (ServerPacketType.AccountLoginReply):
+                return AccountManagementPacketHandler.GetValuesAccountLoginReply(ReadFrom);
+            case (ServerPacketType.AccountRegistrationReply):
+                return AccountManagementPacketHandler.GetValuesAccountRegistrationReply(ReadFrom);
+            case (ServerPacketType.CharacterDataReply):
+                return AccountManagementPacketHandler.GetValuesCharacterDataReply(ReadFrom);
+            case (ServerPacketType.CreateCharacterReply):
+                return AccountManagementPacketHandler.GetValuesCreateCharacterReply(ReadFrom);
+
+            //Game World State
+            case (ServerPacketType.ActivePlayerList):
+                return GameWorldStatePacketHandler.GetValuesActivePlayerList(ReadFrom);
+            case (ServerPacketType.ActiveEntityList):
+                return GameWorldStatePacketHandler.GetValuesActiveEntityList(ReadFrom);
+            case (ServerPacketType.ActiveItemList):
+                return GameWorldStatePacketHandler.GetValuesActiveItemList(ReadFrom);
+            case (ServerPacketType.InventoryContents):
+                return GameWorldStatePacketHandler.GetValuesInventoryContents(ReadFrom);
+            case (ServerPacketType.EquippedItems):
+                return GameWorldStatePacketHandler.GetValuesActivePlayerList(ReadFrom);
+            case (ServerPacketType.SocketedAbilities):
+                return GameWorldStatePacketHandler.GetValuesSocketedAbilities(ReadFrom);
+
+            //Player Communication
+            case (ServerPacketType.PlayerChatMessage):
+                return PlayerCommunicationPacketHandler.GetValuesChatMessage(ReadFrom);
+
+            //Player Management
+            case (ServerPacketType.UpdateRemotePlayer):
+                return PlayerManagementPacketHandler.GetValuesUpdateRemotePlayer(ReadFrom);
+            case (ServerPacketType.AddRemotePlayer):
+                return PlayerManagementPacketHandler.GetValuesAddRemotePlayer(ReadFrom);
+            case (ServerPacketType.RemoveRemotePlayer):
+                return PlayerManagementPacketHandler.GetValuesRemoveRemotePlayer(ReadFrom);
+            case (ServerPacketType.AllowPlayerBegin):
+                return PlayerManagementPacketHandler.GetValuesAllowPlayerBegin(ReadFrom);
+            case (ServerPacketType.RemotePlayerPlayAnimationAlert):
+                return PlayerManagementPacketHandler.GetValuesRemotePlayerPlayAnimation(ReadFrom);
+
+            //System
+            case (ServerPacketType.StillConnectedCheck):
+                return SystemPacketHandler.GetValuesStillConnectedCheck(ReadFrom);
+            case (ServerPacketType.MissingPacketsRequest):
+                return SystemPacketHandler.GetValuesMissingPacketsRequest(ReadFrom);
+            case (ServerPacketType.KickedFromServer):
+                return SystemPacketHandler.GetValuesKickedFromServer(ReadFrom);
+
+            //Combat
+            case (ServerPacketType.LocalPlayerTakeHit):
+                return CombatPacketHandler.GetValuesLocalPlayerTakeHit(ReadFrom);
+            case (ServerPacketType.RemotePlayerTakeHit):
+                return CombatPacketHandler.GetValuesRemotePlayerTakeHit(ReadFrom);
+            case (ServerPacketType.LocalPlayerDead):
+                return CombatPacketHandler.GetValuesLocalPlayerDead(ReadFrom);
+            case (ServerPacketType.RemotePlayerDead):
+                return CombatPacketHandler.GetValuesRemotePlayerDead(ReadFrom);
+            case (ServerPacketType.LocalPlayerRespawn):
+                return CombatPacketHandler.GetValuesLocalPlayerRespawn(ReadFrom);
+            case (ServerPacketType.RemotePlayerRespawn):
+                return CombatPacketHandler.GetValuesRemotePlayerRespawn(ReadFrom);
+        }
+        return new NetworkPacket();
     }
 
     //Reads in a packet sent from the server and passes it onto whatever handle function that packet type is mapped onto
-    public void ReadServerPacket(string PacketMessage)
+    public void ReadServerPacket(string PacketData)
     {
-        //Create a new NetworkPacket object to store the string value that was received from the game server
-        NetworkPacket NewPacket = new NetworkPacket(PacketMessage);
+        //Store the total set of packet data into a new PacketData object for easier reading
+        NetworkPacket TotalPacket = new NetworkPacket(PacketData);
 
-        //Before reading the packets data, check the order number to make sure we didnt miss any packets in between
-        int NewOrderNumber = NewPacket.ReadInt();
-        int ExpectedOrderNumber = ConnectionManager.Instance.LastPacketRecieved + 1;
-
-        //If we ever receive a packet with an order number of -1 then that order number needs to be completely ignored and that packet needs to be processed immediately
-        if(NewOrderNumber == -1)
+        //Iterate over all the packet data until we finish reading and handling it all
+        while (!TotalPacket.FinishedReading())
         {
-            //Handle the packets data
-            HandlePacket(NewPacket);
-        }
-        //If packets were missed then we need to let the server know, and then just wait until all the missing packets have been recieved
-        else if(NewOrderNumber != ExpectedOrderNumber)
-        {
-            //Add this packet that we have just now received into the WaitingToProcess dictionary, and mark it as being the NewestPacketWaitingToProcess while we wait for the rest
-            WaitingToProcess.Add(NewOrderNumber, NewPacket);
-            NewestPacketWaitingToProcess = NewOrderNumber;
-            WaitingForMissingPackets = true;
+            //Read the packets order number and packet type enum values
+            int OrderNumber = TotalPacket.ReadInt();
+            ServerPacketType PacketType = TotalPacket.ReadType();
 
-            //Send an alert to the server, letting them know which packets need to be resent to us so we can catch up to them
-            SystemPacketSender.Instance.SendMissedPacketsRequest(ExpectedOrderNumber);
+            //Get the rest of the values for this set based on the packet type, then put the order number back to the front
+            NetworkPacket SectionPacket = ReadPacketValues(PacketType, TotalPacket);
 
-            //Keep track of the initial order number that we are waiting to receive back from the game server
-            FirstMissingPacketNumber = ExpectedOrderNumber;
+            //Compare this packets order number to see if its arrived in the order we were expecting
+            int ExpectedOrderNumber = ConnectionManager.Instance.LastPacketRecieved + 1;
+            bool InOrder = OrderNumber == ExpectedOrderNumber;
 
-            //Nothing else needs to be done right now as we need to wait for the missing packets to be sent back to us from the server
-            return;
-        }
-        //If we missed nothing then we process the packet data as normal
-        else
-        {
-            //If we are waiting for missing packets to be resent, check if we have everything needed to catch back up
-            if(WaitingForMissingPackets)
+            //If the packet arrived in order then it gets processed normally
+            if (InOrder)
             {
-                //Make sure we arent trying to add packets into the WaitingToProcess dictionary which are already there
-                if(!WaitingToProcess.ContainsKey(NewOrderNumber))
+                //Reset the packets data before we start handling it
+                SectionPacket.ResetRemainingData();
+
+                //Read away the packet type value as its not needed when processing packets immediately
+                SectionPacket.ReadType();
+
+                //Pass the section packet on to its handler function
+                if (PacketHandlers.TryGetValue(PacketType, out Packet Packet))
+                    Packet.Invoke(ref SectionPacket);
+
+                //Store this as the last packet that was processed
+                ConnectionManager.Instance.LastPacketRecieved = OrderNumber;
+            }
+            //If packets arrive out of order its quite a bit more complicated
+            else
+            {
+                //When we first miss some packets we need to figure out which ones we missed and tell the server to resend them back to us
+                if (!WaitingForMissingPackets)
                 {
-                    //Add this packet into the WaitingToProcess dictionary
-                    WaitingToProcess.Add(NewOrderNumber, NewPacket);
+                    //Find the range of packets that are missing
+                    FirstMissingPacketNumber = ExpectedOrderNumber;
+                    LastMissingPacketNumber = OrderNumber - 1;
 
-                    //Set this as the NewestPacketWaitingToProcess if it has a higher order number than the previous
-                    if (NewOrderNumber > NewestPacketWaitingToProcess)
-                        NewestPacketWaitingToProcess = NewOrderNumber;
+                    //Tell the server which packets need to be resent
+                    SystemPacketSender.Instance.SendMissedPacketsRequest(FirstMissingPacketNumber, LastMissingPacketNumber);
+                    WaitingForMissingPackets = true;
 
-                    //Check if we now have all the missing packets that we were waiting for
-                    bool HaveMissingPackets = true;
-                    for (int i = FirstMissingPacketNumber; i < NewestPacketWaitingToProcess; i++)
+                    //Create a list of every missing packet number we need to wait for from the server
+                    for (int i = FirstMissingPacketNumber; i < LastMissingPacketNumber + 1; i++)
+                        MissingPacketNumbers.Add(i);
+
+                    //Add this packet to the list to be processed later after everything else thats missing arrives
+                    WaitingToProcess.Add(OrderNumber, SectionPacket);
+                    NewestPacketWaitingToProcess = OrderNumber;
+                }
+                //If we are already waiting for missing packets, check if this is what we were waiting for
+                else
+                {
+                    //Check if this process is already in the list to be processed, and if its one of the missing packets we still require
+                    bool AlreadyWaiting = WaitingToProcess.ContainsKey(OrderNumber);
+                    bool Needed = MissingPacketNumbers.Contains(OrderNumber);
+
+                    //Any new unexpected packets that get send ahead of time get added to the list for processing later
+                    if (AlreadyWaiting && !Needed)
                     {
-                        if (!WaitingToProcess.ContainsKey(i))
-                        {
-                            HaveMissingPackets = false;
-                            break;
-                        }
+                        WaitingToProcess.Add(OrderNumber, SectionPacket);
+                        if (OrderNumber > NewestPacketWaitingToProcess)
+                            NewestPacketWaitingToProcess = OrderNumber;
                     }
 
-                    //If we now have all the missing packets that we were waiting for, now they can all be processed so we are caught back up to the same state as the game server
-                    if (HaveMissingPackets)
+                    //If we get any missing packets we were waiting for, check if we now have everything missing that we need to catch up to the server
+                    if (!AlreadyWaiting && Needed)
                     {
-                        //Go through all the packets that need to be processed
-                        for (int i = FirstMissingPacketNumber; i < NewestPacketWaitingToProcess; i++)
+                        //Add it to the list to be processed later, and remove its number from the list of missing packets
+                        WaitingToProcess.Add(OrderNumber, SectionPacket);
+                        if (OrderNumber > NewestPacketWaitingToProcess)
+                            NewestPacketWaitingToProcess = OrderNumber;
+                        MissingPacketNumbers.Remove(OrderNumber);
+
+                        //Check if we have all the missing packets yet
+                        if (MissingPacketNumbers.Count <= 0)
                         {
-                            //Grab each packet from the dictionary
-                            NetworkPacket PacketToProcess = WaitingToProcess[i];
+                            //Process all the packets in the waiting list
+                            int CurrentPacketProcess = FirstMissingPacketNumber;
+                            while (CurrentPacketProcess < NewestPacketWaitingToProcess)
+                            {
+                                //Make sure the next packet we should process is in the waiting list
+                                if (WaitingToProcess.ContainsKey(CurrentPacketProcess))
+                                {
+                                    //Get the packet we need to process next, and read its enum type value
+                                    NetworkPacket ToProcess = WaitingToProcess[CurrentPacketProcess];
+                                    ServerPacketType ProcessType = ToProcess.ReadType();
 
-                            //Handle the packets data
-                            HandlePacket(PacketToProcess);
+                                    //Handle this packet
+                                    if (PacketHandlers.TryGetValue(ProcessType, out Packet Packet))
+                                        Packet.Invoke(ref ToProcess);
+                                }
+
+                                //Iterate to the next packet in the catch up order
+                                CurrentPacketProcess++;
+                            }
+
+                            //Finished catching up to the server now
+                            WaitingForMissingPackets = false;
+                            ConnectionManager.Instance.LastPacketRecieved = NewestPacketWaitingToProcess;
                         }
-
-                        //All the missing packets have now been processed, reset the dictionary, disable the flag and set the new value for next expected packet number
-                        WaitingToProcess = new Dictionary<int, NetworkPacket>();
-                        WaitingForMissingPackets = false;
-                        ConnectionManager.Instance.LastPacketRecieved = NewestPacketWaitingToProcess;
                     }
                 }
             }
-            //If we arent waiting for any missing packets, we just process this data as normal
-            else
-            {
-                //Set this number as the last that was recieved from the server
-                ConnectionManager.Instance.LastPacketRecieved = NewOrderNumber;
-
-                //Handle the packets data
-                HandlePacket(NewPacket);
-            }
-        }
-    }
-
-    //Read all the information from the given packet, passing each section on to its registered handler function
-    private void HandlePacket(NetworkPacket NewPacket)
-    {
-        while(!NewPacket.FinishedReading())
-        {
-            ServerPacketType PacketType = NewPacket.ReadType();
-            if (PacketHandlers.TryGetValue(PacketType, out Packet Packet))
-                Packet.Invoke(ref NewPacket);
         }
     }
 }

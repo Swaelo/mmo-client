@@ -42,7 +42,7 @@ public class PlayerFallState : State
     protected override void OnStateUpdate()
     {
         //Use different update method ignoring all user input while player is typing a message into the chat
-        if(ChatMessageInput.Instance.IsTyping)
+        if (ChatMessageInput.Instance.IsTyping)
         {
             UpdateNoInput();
             return;

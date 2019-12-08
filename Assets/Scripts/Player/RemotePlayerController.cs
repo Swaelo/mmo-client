@@ -5,6 +5,7 @@
 // ================================================================================================================================
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RemotePlayerController : MonoBehaviour
 {
@@ -20,6 +21,10 @@ public class RemotePlayerController : MonoBehaviour
     private Quaternion ServerSideRotation = Quaternion.identity;
     private Vector3 ServerSideMovement = Vector3.zero;
     private bool NewPosition = false;
+    //Players health values and the UI object used to display them
+    private int CurrentHealth = 10;
+    private int MaxHealth = 10;
+    private TextMesh HealthText = null;
 
     private void Awake()
     {
@@ -27,6 +32,7 @@ public class RemotePlayerController : MonoBehaviour
         MovementController = GetComponent<CharacterController>();
         AnimationController = GetComponent<Animator>();
         PreviousFramePosition = transform.position;
+        HealthText = transform.Find("Character Health").GetComponent<TextMesh>();
     }
 
     private void Update()
@@ -92,8 +98,15 @@ public class RemotePlayerController : MonoBehaviour
         ServerSideMovement = Vector3.zero;
     }
 
+    //Updates the remote plaeyr health bar values
+    public void UpdateHealth(int NewHPValue)
+    {
+        CurrentHealth = NewHPValue;
+        HealthText.text = CurrentHealth + "/" + MaxHealth;
+    }
+
     //Updates the remote player with new values passed in
-    public void UpdateValues(Vector3 NewPosition, Vector3 NewMovement, Quaternion NewRotation)
+    public void UpdateValues(Vector3 NewPosition, Vector3 NewMovement, Quaternion NewRotation, int CurrentHealth, int MaxHealth)
     {
         //Set the NewPosition flag if we receieved a new value
         if (NewPosition != ServerSidePosition)
@@ -103,6 +116,11 @@ public class RemotePlayerController : MonoBehaviour
         ServerSidePosition = NewPosition;
         ServerSideMovement = NewMovement;
         ServerSideRotation = NewRotation;
+
+        //Update the text display the characters health
+        this.CurrentHealth = CurrentHealth;
+        this.MaxHealth = MaxHealth;
+        HealthText.text = CurrentHealth + "/" + MaxHealth;
     }
 
     //Uses raycasting to check the distance between the players feet and whatever ground is below them to determine if they are standing or in the air
@@ -135,5 +153,11 @@ public class RemotePlayerController : MonoBehaviour
         Eulers.x = transform.rotation.x;
         TargetRotation.eulerAngles = Eulers;
         return TargetRotation;
+    }
+
+    //Remote player just needs some handler functions for the animation attack events, doesnt need to actually do anything with them
+    public void AttackHit()
+    {
+
     }
 }

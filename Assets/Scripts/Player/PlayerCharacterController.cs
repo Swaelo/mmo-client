@@ -49,6 +49,11 @@ public class PlayerCharacterController : MonoBehaviour
     private Vector3 LastMovementUpdate = Vector3.zero;
     private Quaternion LastRotationUpdate = Quaternion.identity;
 
+    //Set when forcing the character to move to a new location, performed in the LateUpdate function so its not overridden by the CharacterController movement
+    private bool ForceMove = false;
+    private Vector3 ForceMovePos;
+    private Quaternion ForceMoveRot;
+
     public void Awake()
     {
         PreviousXZ = new Vector3(transform.position.x, 0f, transform.position.z);
@@ -95,8 +100,16 @@ public class PlayerCharacterController : MonoBehaviour
             YVelocity -= FallSpeed * Time.fixedDeltaTime;
         NewMovementVector.y += YVelocity;
 
-        //Apply movement vector if we have one to apply
-        ControllerComponent.Move(NewMovementVector * MoveSpeed * Time.fixedDeltaTime);
+        //Apply movement vector if there's no values to force set the character to
+        if(!ForceMove)
+            ControllerComponent.Move(NewMovementVector * MoveSpeed * Time.fixedDeltaTime);
+        //Otherwise force set the values
+        else
+        {
+            transform.position = ForceMovePos;
+            transform.rotation = ForceMoveRot;
+            ForceMove = false;
+        }
 
         //Apply new rotation if we have one to apply
         if (QuaternionToApply)
@@ -108,7 +121,7 @@ public class PlayerCharacterController : MonoBehaviour
         //Transition to new state if we have one to move into
         if (NewStateToTransition)
         {
-            Machine.SetState(GetComponent<PlayerFallState>());
+            Machine.SetState(GetComponent<PlayerIdleState>());
             NewStateToTransition = false;
         }
 
@@ -119,6 +132,22 @@ public class PlayerCharacterController : MonoBehaviour
 
         //Pass new movement distance value onto the animation controller
         AnimatorComponent.SetFloat("Movement", MovementSinceLastUpdate);
+    }
+
+    //Transition into the idle state whenever the character is re-enabled after being dead
+    public void OnEnable()
+    {
+        Machine.SetState(GetComponent<PlayerIdleState>());
+        AnimatorComponent.SetBool("IsGrounded", true);
+    }
+
+    //Moves the player to a target location and rotation
+    public void SetPlayer(Vector3 NewPosition, Quaternion NewRotation)
+    {
+        //Flag the character needing to move to these new values
+        ForceMove = true;
+        ForceMovePos = NewPosition;
+        ForceMoveRot = NewRotation;
     }
 
     //Shoots a raycast directly down from the players feet to check how far away the ground is to determine if they are falling or standing

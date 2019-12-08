@@ -9,10 +9,25 @@ using UnityEngine.SceneManagement;
 
 public class SystemPacketHandler : MonoBehaviour
 {
+    public static NetworkPacket GetValuesStillConnectedCheck(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.StillConnectedCheck);
+        return Packet;
+    }
+
     //Every few seconds the server will ask us if we are still connected to see that we havnt timed out
     public static void HandleStillConnectedCheck(ref NetworkPacket Packet)
     {
         SystemPacketSender.Instance.SendStillConnectedReply();
+    }
+
+    public static NetworkPacket GetValuesMissingPacketsRequest(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.MissingPacketsRequest);
+        Packet.WriteInt(ReadFrom.ReadInt());
+        return Packet;
     }
 
     //Handles alert from the server telling us we need to resend them some previous network packets again
@@ -21,6 +36,14 @@ public class SystemPacketHandler : MonoBehaviour
         //Find the number of the packet that was missed and resend it back to the server
         int MissingPacketNumber = Packet.ReadInt();
         ConnectionManager.Instance.SendMissingPacket(MissingPacketNumber);
+    }
+
+    public static NetworkPacket GetValuesKickedFromServer(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.KickedFromServer);
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
     }
 
     //Handles alert from the server telling us we have been kicked from the server

@@ -9,11 +9,18 @@ using UnityEngine.UI;
 
 public class AccountManagementPacketHandler : MonoBehaviour
 {
+    public static NetworkPacket GetValuesAccountLoginReply(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.AccountLoginReply);
+        Packet.WriteBool(ReadFrom.ReadBool());
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
+    }
+
     //Handles reply from the server after we have requested to login to a user account
     public static void HandleAccountLoginReply(ref NetworkPacket Packet)
     {
-        Log.In("Account Login Reply");
-
         //Read the data values from the packet reader
         bool LoginSuccess = Packet.ReadBool();
         string ReplyMessage = Packet.ReadString();
@@ -33,6 +40,15 @@ public class AccountManagementPacketHandler : MonoBehaviour
             InterfaceManager.Instance.SetObjectActive("Loading Characters Panel", true);
             AccountManagementPacketSender.Instance.SendCharacterDataRequest();
         }
+    }
+
+    public static NetworkPacket GetValuesAccountRegistrationReply(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.AccountRegistrationReply);
+        Packet.WriteBool(ReadFrom.ReadBool());
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
     }
 
     public static void HandleAccountRegistrationReply(ref NetworkPacket Packet)
@@ -59,6 +75,26 @@ public class AccountManagementPacketHandler : MonoBehaviour
             InterfaceManager.Instance.SetObjectActive("Account Login Panel", true);
             
         }
+    }
+
+    public static NetworkPacket GetValuesCharacterDataReply(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.CharacterDataReply);
+        int CharacterCount = ReadFrom.ReadInt();
+        Packet.WriteInt(CharacterCount);
+        for(int i = 0; i < CharacterCount; i++)
+        {
+            Packet.WriteString(ReadFrom.ReadString());
+            Packet.WriteVector3(ReadFrom.ReadVector3());
+            Packet.WriteQuaternion(ReadFrom.ReadQuaternion());
+            Packet.WriteFloat(ReadFrom.ReadFloat());
+            Packet.WriteFloat(ReadFrom.ReadFloat());
+            Packet.WriteFloat(ReadFrom.ReadFloat());
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+        }
+        return Packet;
     }
 
     public static void HandleCharacterDataReply(ref NetworkPacket Packet)
@@ -111,6 +147,15 @@ public class AccountManagementPacketHandler : MonoBehaviour
             else
                 InfoObject.GetComponent<Text>().text = Data.Name;
         }
+    }
+
+    public static NetworkPacket GetValuesCreateCharacterReply(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.CreateCharacterReply);
+        Packet.WriteBool(ReadFrom.ReadBool());
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
     }
 
     public static void HandleCreateCharacterReply(ref NetworkPacket Packet)

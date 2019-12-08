@@ -8,6 +8,25 @@ using UnityEngine;
 
 public class GameWorldStatePacketHandler : MonoBehaviour
 {
+    public static NetworkPacket GetValuesActivePlayerList(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.ActivePlayerList);
+        int ClientCount = ReadFrom.ReadInt();
+        Packet.WriteInt(ClientCount);
+        for(int i = 0; i < ClientCount; i++)
+        {
+            Packet.WriteString(ReadFrom.ReadString());
+            Packet.WriteBool(ReadFrom.ReadBool());
+            Packet.WriteVector3(ReadFrom.ReadVector3());
+            Packet.WriteVector3(ReadFrom.ReadVector3());
+            Packet.WriteQuaternion(ReadFrom.ReadQuaternion());
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+        }
+        return Packet;
+    }
+
     //Handles loading in list of all other active players before we can enter into the game world
     public static void HandleActivePlayerList(ref NetworkPacket Packet)
     {
@@ -21,16 +40,35 @@ public class GameWorldStatePacketHandler : MonoBehaviour
         {
             //Read each characters name and location values
             string CharacterName = Packet.ReadString();
+            bool CharacterAlive = Packet.ReadBool();
             Vector3 CharacterPosition = Packet.ReadVector3();
             Vector3 CharacterMovement = Packet.ReadVector3();
             Quaternion CharacterRotation = Packet.ReadQuaternion();
+            int CharacterCurrentHP = Packet.ReadInt();
+            int CharacterMaxHP = Packet.ReadInt();
 
             //Pass each characters information onto the PlayerManager so it can be spawned into the game world
-            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterMovement, CharacterRotation);
+            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterAlive, CharacterPosition, CharacterMovement, CharacterRotation, CharacterCurrentHP, CharacterMaxHP);
         }
 
         //Note that we have finished loading in the active player list
         GameState.Instance.PlayerListLoaded = true;
+    }
+
+    public static NetworkPacket GetValuesActiveEntityList(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.ActiveEntityList);
+        int EntityCount = ReadFrom.ReadInt();
+        Packet.WriteInt(EntityCount);
+        for(int i = 0; i < EntityCount; i++)
+        {
+            Packet.WriteString(ReadFrom.ReadString());
+            Packet.WriteString(ReadFrom.ReadString());
+            Packet.WriteVector3(ReadFrom.ReadVector3());
+            Packet.WriteInt(ReadFrom.ReadInt());
+        }
+        return Packet;
     }
 
     //Handles loading in list of all active entities before we can enter into the game world
@@ -55,6 +93,21 @@ public class GameWorldStatePacketHandler : MonoBehaviour
         GameState.Instance.EntityListLoaded = true;
     }
 
+    public static NetworkPacket GetValuesActiveItemList(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.ActiveItemList);
+        int ItemCount = ReadFrom.ReadInt();
+        Packet.WriteInt(ItemCount);
+        for (int i = 0; i < ItemCount; i++)
+        {
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteVector3(ReadFrom.ReadVector3());
+        }
+        return Packet;
+    }
+
     //Handles loading in list of all active game item pickups before we can enter into the game world
     public static void HandleActiveItemList(ref NetworkPacket Packet)
     {
@@ -74,6 +127,20 @@ public class GameWorldStatePacketHandler : MonoBehaviour
 
         //Note that we have finished loading in the item pickup list
         GameState.Instance.ItemListLoaded = true;
+    }
+
+    public static NetworkPacket GetValuesInventoryContents(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.InventoryContents);
+        int ItemCount = ReadFrom.ReadInt();
+        Packet.WriteInt(ItemCount);
+        for (int i = 0; i < ItemCount; i++)
+        {
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+        }
+        return Packet;
     }
 
     //Handles loading in contents of our characters inventory before we can enter into the game world
@@ -96,6 +163,21 @@ public class GameWorldStatePacketHandler : MonoBehaviour
         GameState.Instance.InventoryLoaded = true;
     }
 
+    public static NetworkPacket GetValuesEquippedItems(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.EquippedItems);
+        int EquipmentCount = ReadFrom.ReadInt();
+        Packet.WriteInt(EquipmentCount);
+        for (int i = 0; i < EquipmentCount; i++)
+        {
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+        }
+        return Packet;
+    }
+
     //Handles loading in contents of our characters equipment before we can enter into the game world
     public static void HandleEquippedItems(ref NetworkPacket Packet)
     {
@@ -115,6 +197,20 @@ public class GameWorldStatePacketHandler : MonoBehaviour
 
         //Note that we have finished loading in the characters equipment contents
         GameState.Instance.EquipmentLoaded = true;
+    }
+
+    public static NetworkPacket GetValuesSocketedAbilities(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.SocketedAbilities);
+        int AbilityCount = ReadFrom.ReadInt();
+        Packet.WriteInt(AbilityCount);
+        for (int i = 0; i < AbilityCount; i++)
+        {
+            Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteInt(ReadFrom.ReadInt());
+        }
+        return Packet;
     }
 
     //Handles loading in contents of our characters action bar before we can enter into the game world

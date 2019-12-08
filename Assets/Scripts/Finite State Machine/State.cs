@@ -50,16 +50,4 @@ public class State : MonoBehaviour
     {
         OnStateUpdate();
     }
-
-    //Ensures the enable function isnt called again if this state was already the active one
-    public void OnEnable()
-    {
-        enabled = this != Machine.GetCurrentState;
-    }
-
-    //Ensures the disable function isnt called again if this state was already the active one
-    public void OnDisable()
-    {
-        enabled = this == Machine.GetCurrentState;
-    }
 }

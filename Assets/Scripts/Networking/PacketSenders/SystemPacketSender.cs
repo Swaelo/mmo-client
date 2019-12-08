@@ -12,19 +12,22 @@ public class SystemPacketSender : MonoBehaviour
     void Awake() { Instance = this; }
 
     /// <summary>
-    /// //Sends a message to the game server letting them know we have missed some packets that they have sent us
+    /// Sends an alert to the game server letting them know we have missed multiple packets and need them all sent back to us again
     /// </summary>
-    /// <param name="NextExpectedPacketNumber"></param>
-    public void SendMissedPacketsRequest(int NextExpectedPacketNumber)
+    /// <param name="FirstMissedPacket">Order number of the first packet we missed</param>
+    /// <param name="LastMissedPacket">Order number of the last packet we missed</param>
+    public void SendMissedPacketsRequest(int FirstMissedPacket, int LastMissedPacket)
     {
         NetworkPacket Packet = new NetworkPacket();
         Packet.WriteType(ClientPacketType.MissedPacketsRequest);
-        Packet.WriteInt(NextExpectedPacketNumber);
+        Packet.WriteInt(FirstMissedPacket);
+        Packet.WriteInt(LastMissedPacket);
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
+        Log.Chat("Asking for packets " + FirstMissedPacket + " through to " + LastMissedPacket + " to be resent.");
     }
 
     /// <summary>
-    /// //Sends a reply to the server letting them know we are still connected
+    /// Sends a reply to the server letting them know we are still connected
     /// </summary>
     public void SendStillConnectedReply()
     {
@@ -35,7 +38,7 @@ public class SystemPacketSender : MonoBehaviour
     }
 
     /// <summary>
-    /// //Sends an alert to the server letting it know we are out of sync and need to be kicked from the game
+    /// Sends an alert to the server letting it know we are out of sync and need to be kicked from the game
     /// </summary>
     public void SendOutOfSyncAlert()
     {
@@ -44,5 +47,13 @@ public class SystemPacketSender : MonoBehaviour
         Packet.WriteInt(-1);
         Packet.WriteType(ClientPacketType.OutOfSyncAlert);
         ConnectionManager.Instance.SendPacketImmediately(Packet);
+    }
+
+    //Sends a request to the server asking to have our character respawn back at the spawn pad
+    public void SendRespawnRequest()
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ClientPacketType.PlayerRespawnRequest);
+        ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
 }

@@ -12,6 +12,15 @@ public class PlayerCommunicationPacketHandler : MonoBehaviour
     public static PlayerCommunicationPacketHandler Instance = null;
     void Awake() { Instance = this; }
 
+    public static NetworkPacket GetValuesChatMessage(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.PlayerChatMessage);
+        Packet.WriteString(ReadFrom.ReadString());
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
+    }
+
     //Recieves some other clients chat message and displays it in our chat log
     public static void HandleChatMessage(ref NetworkPacket Packet)
     {

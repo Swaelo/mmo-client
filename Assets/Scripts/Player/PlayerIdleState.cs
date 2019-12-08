@@ -31,7 +31,7 @@ public class PlayerIdleState : State
     protected override void OnStateUpdate()
     {
         //Run a seperate update method ignore all user input while they are typing a message into the chat log
-        if(ChatMessageInput.Instance.IsTyping)
+        if (ChatMessageInput.Instance.IsTyping)
         {
             UpdateNoInput();
             return;

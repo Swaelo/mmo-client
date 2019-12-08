@@ -16,4 +16,7 @@ public class PrefabManager : MonoBehaviour
     public GameObject LocalPlayerPrefab;
     public GameObject RemotePlayerPrefab;
     public GameObject KickReasonPrefab;
+    public GameObject LocalPlayerRagdollPrefab;
+    public GameObject RemotePlayerRagdollPrefab;
+    public GameObject DeadPlayerCamera;
 }

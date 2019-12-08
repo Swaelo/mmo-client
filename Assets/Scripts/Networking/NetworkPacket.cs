@@ -21,6 +21,13 @@ public class NetworkPacket
         RemainingPacketData = PacketData;
     }
 
+    //copy constructor
+    public NetworkPacket(NetworkPacket CopyFrom)
+    {
+        this.PacketData = CopyFrom.PacketData;
+        this.RemainingPacketData = PacketData;
+    }
+
     //Checks the current value of the RemainingPacketData to check if there is any data left to be read from it
     public bool FinishedReading()
     {
@@ -31,10 +38,21 @@ public class NetworkPacket
         return false;
     }
 
-    //Adds the packet order number to the start of the packet data
+    //Resets RemainingPacketData back to total PacketData value
+    public void ResetRemainingData()
+    {
+        RemainingPacketData = PacketData;
+    }
+
+    /// <summary>
+    /// Adds the packet number to the front of the packet data, then resets RemainingPacketData to the new PacketData value
+    /// </summary>
+    /// <param name="PacketNumber">Order number to place at the front of the packet</param>
     public void AddPacketOrderNumber(int PacketNumber)
     {
-        PacketData = PacketNumber.ToString() + " " + PacketData;
+        string NewPacketData = PacketNumber.ToString() + " " + PacketData;
+        PacketData = NewPacketData;
+        RemainingPacketData = NewPacketData;
     }
 
     //Writes an interger value onto the end of the current PacketData
@@ -86,6 +104,12 @@ public class NetworkPacket
         RemainingPacketData = RemainingPacketData.Substring(RemainingPacketData.IndexOf(' ') + 1);
         //Return the final bool value that was requested
         return BoolValue;
+    }
+
+    //Writes a ServerPacketType enum value onto the end of the current PacketData
+    public void WriteType(ServerPacketType PacketType)
+    {
+        WriteInt((int)PacketType);
     }
 
     //Writes a ClientPacketType enum value onto the end of the current PacketData

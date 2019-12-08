@@ -21,6 +21,9 @@ public class PlayerAttackState : State
     private PlayerCharacterController Controller;
     private void Awake() { Controller = GetComponent<PlayerCharacterController>(); }
 
+    //Where the players attack hits
+    public GameObject AttackHitLocation;
+
     //Base State class virtual function overrides
     protected override void OnStateInitialize(StateMachine Machine = null)
     {
@@ -81,6 +84,12 @@ public class PlayerAttackState : State
             ComboPerformed = true;  //Set this flag so the combo can only be performed once and not infinitely
             Controller.AnimatorComponent.SetBool("Attack2", true);
         }
+    }
+
+    //Sends a message to the server when our attack lands to see if we can deal damage to any of the players
+    public void AttackHit()
+    {
+        CombatPacketSender.Instance.SendPlayerAttackAlert(AttackHitLocation.transform.position);
     }
 
     //Version of OnStateUpdate that ignores all user input, meant to be used while user is typing a message into the chat window

@@ -12,19 +12,17 @@ public class PlayerManagementPacketHandler : MonoBehaviour
     public static PlayerManagementPacketHandler Instance = null;
     void Awake() { Instance = this; }
 
-    public static void HandleTeleportLocalPlayer(ref NetworkPacket Packet)
+    public static NetworkPacket GetValuesUpdateRemotePlayer(NetworkPacket ReadFrom)
     {
-        Log.In("Handle Teleport Local Player");
-        Vector3 Position = Packet.ReadVector3();
-        PlayerManager.Instance.TeleportLocalPlayer(Position);
-    }
-
-    public static void HandleTeleportRemotePlayer(ref NetworkPacket Packet)
-    {
-        Log.In("Handle Teleport Remote Player");
-        string Name = Packet.ReadString();
-        Vector3 Position = Packet.ReadVector3();
-        PlayerManager.Instance.TeleportRemotePlayer(Name, Position);
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.UpdateRemotePlayer);
+        Packet.WriteString(ReadFrom.ReadString());
+        Packet.WriteVector3(ReadFrom.ReadVector3());
+        Packet.WriteVector3(ReadFrom.ReadVector3());
+        Packet.WriteQuaternion(ReadFrom.ReadQuaternion());
+        Packet.WriteInt(ReadFrom.ReadInt());
+        Packet.WriteInt(ReadFrom.ReadInt());
+        return Packet;
     }
 
     public static void HandleUpdateRemotePlayer(ref NetworkPacket Packet)
@@ -37,9 +35,25 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         Vector3 Position = Packet.ReadVector3();
         Vector3 Movement = Packet.ReadVector3();
         Quaternion Rotation = Packet.ReadQuaternion();
+        int CurrentHealth = Packet.ReadInt();
+        int MaxHealth = Packet.ReadInt();
 
         //Pass the values on to the player handler for processing
-        PlayerManager.Instance.UpdateRemotePlayer(Name, Position, Movement, Rotation);
+        PlayerManager.Instance.UpdateRemotePlayer(Name, Position, Movement, Rotation, CurrentHealth, MaxHealth);
+    }
+
+    public static NetworkPacket GetValuesAddRemotePlayer(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.AddRemotePlayer);
+        Packet.WriteString(ReadFrom.ReadString());
+        Packet.WriteBool(ReadFrom.ReadBool());
+        Packet.WriteVector3(ReadFrom.ReadVector3());
+        Packet.WriteVector3(ReadFrom.ReadVector3());
+        Packet.WriteQuaternion(ReadFrom.ReadQuaternion());
+        Packet.WriteInt(ReadFrom.ReadInt());
+        Packet.WriteInt(ReadFrom.ReadInt());
+        return Packet;
     }
 
     //Handles instructions to spawn a newly connected game clients player character into our game world
@@ -49,12 +63,23 @@ public class PlayerManagementPacketHandler : MonoBehaviour
 
         //Read the relevant values from the network packet
         string CharacterName = Packet.ReadString();
+        bool CharacterAlive = Packet.ReadBool();
         Vector3 CharacterPosition = Packet.ReadVector3();
         Vector3 CharacterMovement = Packet.ReadVector3();
         Quaternion CharacterRotation = Packet.ReadQuaternion();
+        int CharacterHealth = Packet.ReadInt();
+        int CharacterMaxHealth = Packet.ReadInt();
 
         //Use the remote player manager to spawn this remote player character into our game world
-        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterPosition, CharacterMovement, CharacterRotation);
+        PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterAlive, CharacterPosition, CharacterMovement, CharacterRotation, CharacterHealth, CharacterMaxHealth);
+    }
+
+    public static NetworkPacket GetValuesRemoveRemotePlayer(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.RemoveRemotePlayer);
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
     }
 
     //Handles instructions to despawn some other dead clients player character from our game world
@@ -67,6 +92,13 @@ public class PlayerManagementPacketHandler : MonoBehaviour
 
         //Use the remote player manager to despawn this dead clients player character from our game world
         PlayerManager.Instance.RemoveRemotePlayer(CharacterName);
+    }
+
+    public static NetworkPacket GetValuesAllowPlayerBegin(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.AllowPlayerBegin);
+        return Packet;
     }
 
     //Finally enters our player character into the game world once the server has let us know they've added us into the world physics simulation
@@ -91,9 +123,15 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         float CameraYRotation = GameState.SelectedCharacter.CameraYRotation;
         GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
         PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
+    }
 
-        //Log the selected characters current and maxmimum health values to see if they were loaded correctly
-        Log.Chat("Current Health: " + GameState.SelectedCharacter.CurrentHealth + ", Max Health: " + GameState.SelectedCharacter.MaxHealth, true);
+    public static NetworkPacket GetValuesRemotePlayerPlayAnimation(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.RemotePlayerPlayAnimationAlert);
+        Packet.WriteString(ReadFrom.ReadString());
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
     }
 
     public static void HandleRemotePlayerPlayAnimation(ref NetworkPacket Packet)

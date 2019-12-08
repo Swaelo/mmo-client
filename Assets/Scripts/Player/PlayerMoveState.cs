@@ -30,7 +30,7 @@ public class PlayerMoveState : State
     protected override void OnStateUpdate()
     {
         //Run a seperate update method ignoring all user input while they are typing a message into the chat window
-        if(ChatMessageInput.Instance.IsTyping)
+        if (ChatMessageInput.Instance.IsTyping)
         {
             UpdateNoInput();
             return;
