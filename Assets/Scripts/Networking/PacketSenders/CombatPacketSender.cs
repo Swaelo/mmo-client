@@ -16,7 +16,6 @@ public class CombatPacketSender : MonoBehaviour
     public void SendPlayerAttackAlert(Vector3 AttackLocation)
     {
         Log.Out("Player Attack Alert");
-
         NetworkPacket Packet = new NetworkPacket();
         Packet.WriteType(ClientPacketType.PlayerAttackAlert);
         Packet.WriteVector3(AttackLocation);

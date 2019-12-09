@@ -93,6 +93,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
             Packet.WriteFloat(ReadFrom.ReadFloat());
             Packet.WriteInt(ReadFrom.ReadInt());
             Packet.WriteInt(ReadFrom.ReadInt());
+            Packet.WriteBool(ReadFrom.ReadBool());
         }
         return Packet;
     }
@@ -130,6 +131,7 @@ public class AccountManagementPacketHandler : MonoBehaviour
             Data.CameraYRotation = Packet.ReadFloat();
             Data.CurrentHealth = Packet.ReadInt();
             Data.MaxHealth = Packet.ReadInt();
+            Data.IsAlive = Packet.ReadBool();
 
             //Store each characters data to be accessed later
             if (i == 0)

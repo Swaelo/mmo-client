@@ -23,4 +23,5 @@ public class CharacterData
     public int ExperienceToLevel = 100;   //Amount of EXP needed to reach the next level
     public int Level = 1;   //Current level
     public bool IsMale = true; //Is the character male
+    public bool IsAlive = true; //Is the character dead or alive
 }

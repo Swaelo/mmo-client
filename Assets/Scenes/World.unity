@@ -3365,7 +3365,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4612979449978891023}
   m_HandleRect: {fileID: 4612979449978891022}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -6350,9 +6350,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33dff66b4288ad24d81615f7f03a2de7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FirstMissingPacketNumber: 0
-  LastMissingPacketNumber: 0
-  NewestPacketWaitingToProcess: 0
 --- !u!114 &4612979450738705423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6366,8 +6363,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UseDebugServer: 0
-  LastPacketRecieved: 0
-  NextOutgoingPacketNumber: 0
+  TransmitPackets: 1
 --- !u!224 &4612979450740243656
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7290,7 +7286,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4612979451769678791}
   m_HandleRect: {fileID: 4612979451769678790}
   m_Direction: 2
-  m_Value: -0.00000091851905
+  m_Value: -0.000000962258
   m_Size: 0.41856664
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -14656,7 +14652,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: InDev:19
+  m_Text: InDev:23
 --- !u!222 &4612979451864593661
 CanvasRenderer:
   m_ObjectHideFlags: 0

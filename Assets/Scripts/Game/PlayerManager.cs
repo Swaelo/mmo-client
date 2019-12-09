@@ -28,7 +28,12 @@ public class PlayerManager : MonoBehaviour
     /// <param name="PlayerLocation">World Location where the player will be spawned at</param>
     public void AddLocalPlayer(Vector3 PlayerLocation, Quaternion PlayerRotation)
     {
+        //Add the local player character into the game world
         LocalPlayer = GameObject.Instantiate(PrefabManager.Instance.LocalPlayerPrefab, PlayerLocation, PlayerRotation);
+
+        //If the player is dead disable them and replace it with a ragdoll
+        if (!GameState.Instance.SelectedCharacter.IsAlive)
+            KillLocalPlayer();
     }
 
     /// <summary>
@@ -187,6 +192,13 @@ public class PlayerManager : MonoBehaviour
         if(!RemotePlayers.ContainsKey(PlayerName))
         {
             Log.Chat("Ignoring request to kill unknown remote player: " + PlayerName);
+            return;
+        }
+
+        //Ignore requests to spawn remote player ragdolls who are already there
+        if(RemotePlayerCorpses.ContainsKey(PlayerName))
+        {
+            Log.Chat("Ignoring request to spawn remote player ragdoll who is already there");
             return;
         }
 
