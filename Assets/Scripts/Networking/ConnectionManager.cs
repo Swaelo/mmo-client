@@ -38,8 +38,6 @@ public class ConnectionManager : MonoBehaviour
     private float ConnectionTimeout = 10.0f;    //How long to wait for the connection to go through before announcing the servers are probably down
     private bool TimedOut = false;  //Flag set once we have announced that the connection to the server has timed out
 
-    public bool TransmitPackets = true;
-
     void Awake()
     {
         //Assign our singleton class instance
@@ -60,9 +58,6 @@ public class ConnectionManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.G))
-            TransmitPackets = !TransmitPackets;
-
         //Wait for server connection to be established until it times out
         if (TryingToConnect)
             TryConnecting();

@@ -34,12 +34,4 @@ public class SystemPacketSender : MonoBehaviour
         Packet.WriteType(ClientPacketType.StillConnectedReply);
         ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
     }
-
-    //Sends a request to the server asking to have our character respawn back at the spawn pad
-    public void SendRespawnRequest()
-    {
-        NetworkPacket Packet = new NetworkPacket();
-        Packet.WriteType(ClientPacketType.PlayerRespawnRequest);
-        ConnectionManager.Instance.PacketQueue.QueuePacket(Packet);
-    }
 }

@@ -178,6 +178,7 @@ public class PacketHandler : MonoBehaviour
             {
                 //Tell the server what we need resent and disregard everything else in this packet
                 SystemPacketSender.Instance.SendMissedPacketsRequest(ExpectedOrderNumber);
+
                 return;
             }
         }

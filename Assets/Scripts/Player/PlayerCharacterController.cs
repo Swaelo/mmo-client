@@ -158,7 +158,7 @@ public class PlayerCharacterController : MonoBehaviour
         {
             //If we hit something we need to see how far away it is, if its within a certain distance then we consider the character to be grounded
             float GroundDistance = Vector3.Distance(transform.position, GroundHit.point);
-            return GroundDistance <= 0.1f;
+            return GroundDistance <= 0.5f;
         }
 
         //The raycast only goes to a distance of 1 ingame unit, if it didnt hit anything at all then the character obviously isnt on the ground

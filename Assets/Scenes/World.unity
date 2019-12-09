@@ -13169,7 +13169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b896e6bfbf7fdfc49b275e6416272e89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LogOutgoingPackets: 0
+  LogOutgoingPackets: 1
   LogIncomingPackets: 0
 --- !u!114 &4612979451707077887
 MonoBehaviour:
@@ -14652,7 +14652,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: InDev:23
+  m_Text: InDev:25
 --- !u!222 &4612979451864593661
 CanvasRenderer:
   m_ObjectHideFlags: 0

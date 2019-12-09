@@ -11,8 +11,8 @@ using UnityEngine.SceneManagement;
 
 public class PacketQueue
 {
-    private float CommunicationInterval = 0.1f;   //How often the outgoing packets queue is transmitted to the server
-    private float NextCommunication = 0.1f;   //Time left until we transmit queued packets to the server
+    private float CommunicationInterval = 0.5f;   //How often the outgoing packets queue is transmitted to the server
+    private float NextCommunication = 0.5f;   //Time left until we transmit queued packets to the server
     //Order number for the next packet to be sent to the server
     private int MostPreviousPacketNumber = 0;
     private int GetNextOutgoingPacketNumber() { return ++MostPreviousPacketNumber; }
@@ -44,9 +44,6 @@ public class PacketQueue
     //Copy all outgoing packets into a brand new array, then transmit them all to the server (or, resend all the packets since the last missing packet if they requested that)
     public void TransmitPackets()
     {
-        //Rest the interval timer
-        NextCommunication = CommunicationInterval;
-
         //Copy the current outgoing packet queue into a new array, then reset it so packets can keep getting queued into it
         Dictionary<int, NetworkPacket> TransmissionQueue = new Dictionary<int, NetworkPacket>(OutgoingPacketQueue);
         OutgoingPacketQueue.Clear();
@@ -84,7 +81,7 @@ public class PacketQueue
         }
 
         //Now transmit all this data to the server if theres anything to send
-        if(TotalData != "" && ConnectionManager.Instance.TransmitPackets)
+        if(TotalData != "")
         {
             //Convert the data into byte array then send it over to the game server
             byte[] PacketData = Encoding.UTF8.GetBytes(TotalData);
@@ -100,6 +97,9 @@ public class PacketQueue
 
         //Transmit packets and reset timer at zero
         if (NextCommunication <= 0.0f)
+        {
             TransmitPackets();
+            NextCommunication = CommunicationInterval;
+        }
     }
 }
