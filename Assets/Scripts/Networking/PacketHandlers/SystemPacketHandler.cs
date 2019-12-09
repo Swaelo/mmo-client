@@ -33,9 +33,12 @@ public class SystemPacketHandler : MonoBehaviour
     //Handles alert from the server telling us we need to resend them some previous network packets again
     public static void HandleMissingPacketsRequest(ref NetworkPacket Packet)
     {
-        //Find the number of the packet that was missed and resend it back to the server
-        int MissingPacketNumber = Packet.ReadInt();
-        ConnectionManager.Instance.SendMissingPacket(MissingPacketNumber);
+        //Log what is happening here
+        Log.Chat("Handle Missing Packets Request");
+
+        //Flag the server as needing to have a bunch of missing packets resent back to it again
+        ConnectionManager.Instance.PacketQueue.PacketsToResend = true;
+        ConnectionManager.Instance.PacketQueue.ResendStartNumber = Packet.ReadInt();
     }
 
     public static NetworkPacket GetValuesKickedFromServer(NetworkPacket ReadFrom)

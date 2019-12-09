@@ -4,90 +4,102 @@
 // Author:	    Harley Laurie https://www.github.com/Swaelo/
 // ================================================================================================================================
 
+using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PacketQueue
 {
-    private float CommunicationInterval = 0.1f; //How often the outgoing packets list will be emptied and transmitted to the server
-    private float NextCommunication = 0.1f; //Time remaining before the next communication interval occurs
-    private List<NetworkPacket> OutgoingPackets;    //Current list of packets to be transmitted in the next communication interval
-    private List<NetworkPacket> SecondaryQueue; //Secondary queue where new packets are added to while the main queue is being used for transmission
-    private bool MainQueueInUse = false;    //Flag set so we know which queue to use when adding new packets to the queue
+    private float CommunicationInterval = 0.1f;   //How often the outgoing packets queue is transmitted to the server
+    private float NextCommunication = 0.1f;   //Time left until we transmit queued packets to the server
+    //Order number for the next packet to be sent to the server
+    private int MostPreviousPacketNumber = 0;
+    private int GetNextOutgoingPacketNumber() { return ++MostPreviousPacketNumber; }
+    //Current set of packets waiting to be transmitted, and the total set of packets that have been sent to the server so far (maximum previous 150 packets)
+    private Dictionary<int, NetworkPacket> OutgoingPacketQueue = new Dictionary<int, NetworkPacket>();
+    private Dictionary<int, NetworkPacket> PacketHistory = new Dictionary<int, NetworkPacket>();
+    //Set when the server has told us they are missing some packets and need them to be resent back again
+    public bool PacketsToResend = false;
+    public int ResendStartNumber = -1;
+    //Packet order number last recieved from the server
+    public int LastPacketNumberRecieved = 0;
 
-    //Default constructor
-    public PacketQueue()
+    //Adds a NetworkPacket to the outgoing packets queue
+    public void QueuePacket(NetworkPacket Packet)
     {
-        //Initialize the outgoing packets list
-        OutgoingPackets = new List<NetworkPacket>();
-        SecondaryQueue = new List<NetworkPacket>();
+        //Add the order number to the front of the packet data
+        int OrderNumber = GetNextOutgoingPacketNumber();
+        Packet.AddPacketOrderNumber(OrderNumber);
+
+        //Add it into the queue for transmission later, and into the total history list also
+        OutgoingPacketQueue.Add(OrderNumber, Packet);
+        PacketHistory.Add(OrderNumber, Packet);
+
+        //Maintain a maximum history of 150 previous packets
+        if (PacketHistory.Count > 150)
+            PacketHistory.Remove(OrderNumber - 150);
     }
 
-    //Adds a network packet to the outgoing queue
-    public void QueuePacket(NetworkPacket NewPacket)
+    //Copy all outgoing packets into a brand new array, then transmit them all to the server (or, resend all the packets since the last missing packet if they requested that)
+    public void TransmitPackets()
     {
-        //Check the value of the MainQueueInUse flag so we know where to queue new packets to
-        List<NetworkPacket> CurrentQueue = MainQueueInUse ? SecondaryQueue : OutgoingPackets;
-
-        //Add the new packet to the outgoing queue
-        CurrentQueue.Add(NewPacket);
-    }
-
-    //Adds a list of packets to the main queue
-    private void AddToMainQueue(List<NetworkPacket> Packets)
-    {
-        foreach (NetworkPacket Packet in Packets)
-            AddToMainQueue(Packet);
-    }
-
-    //Adds a packet to the main queue
-    private void AddToMainQueue(NetworkPacket Packet)
-    {
-        OutgoingPackets.Add(Packet);
-    }
-
-    //Adds a packet to the secondary queue
-    private void AddToSecondaryQueue(NetworkPacket Packet)
-    {
-        SecondaryQueue.Add(Packet);
-    }
-
-    //Automatically tracks the interval timer, resetting it and transmitting all queued packets every time it reaches zero
-    public void UpdateQueue()
-    {
-        //Count down the timer until the next communication event should occur
-        NextCommunication -= Time.deltaTime;
-
-        //Transmit all the outgoing packets to the server and reset the timer whenever it reaches zero
-        if(NextCommunication <= 0.0f)
-            TransmitPackets();
-    }
-
-    //Transmits all outgoing packets to the game server and resets the interval timer
-    private void TransmitPackets()
-    {
-        //Reset the secondary queue, then enable the flag so any new packets are added there for the time being
-        SecondaryQueue.Clear();
-        MainQueueInUse = true;
-
-        //Reset the communication interval timer
+        //Rest the interval timer
         NextCommunication = CommunicationInterval;
 
-        //Combine the data of every packet in the main queue into a single string
+        //Copy the current outgoing packet queue into a new array, then reset it so packets can keep getting queued into it
+        Dictionary<int, NetworkPacket> TransmissionQueue = new Dictionary<int, NetworkPacket>(OutgoingPacketQueue);
+        OutgoingPacketQueue.Clear();
+
+        //Create a new strig we will fill with the data of every packet in the transmission queue so its all sent at once
         string TotalData = "";
-        foreach (NetworkPacket Packet in OutgoingPackets)
-            TotalData += Packet.PacketData;
 
-        //Transmit this data to the server if it didnt end up still being empty
-        if (TotalData != "")
-            ConnectionManager.Instance.SendPacket(TotalData);
+        //Append the data of each packet in the transmission queue if we dont have missing packets to resend
+        if(!PacketsToResend)
+        {
+            foreach (KeyValuePair<int, NetworkPacket> Packet in TransmissionQueue)
+                TotalData += Packet.Value.PacketData;
+        }
+        //Otherwise we append the data of every packet in history, starting from the first the client is missing, to the last one in the dictionary
+        else
+        {
+            //Check thie missing packets that are being requested are still being stored in memory
+            if(!PacketHistory.ContainsKey(ResendStartNumber))
+            {
+                //Print an error and close the connection to the server if they request packets outside of the current history
+                Log.Chat("ERROR: Server requesting packets outside of history, closing the connection.");
 
-        //Reset the contents of the main queue, then copy anything in the secondary queue into the main queue
-        OutgoingPackets.Clear();
-        foreach (NetworkPacket Packet in SecondaryQueue)
-            OutgoingPackets.Add(Packet);
+                //Change to the disconnected from server scene
+                SceneManager.LoadScene("Disconnected");
 
-        //Now disable the flag so new packets are again being added into the main queue
-        MainQueueInUse = false;
+                //Exit the function
+                return;
+            }
+
+            //Loop from the first missing packet number, all the way to the most previously queued packet and all all of their data into the string
+            for (int i = ResendStartNumber; i < MostPreviousPacketNumber; i++)
+                TotalData += PacketHistory[i].PacketData;
+
+            PacketsToResend = false;
+        }
+
+        //Now transmit all this data to the server if theres anything to send
+        if(TotalData != "" && ConnectionManager.Instance.TransmitPackets)
+        {
+            //Convert the data into byte array then send it over to the game server
+            byte[] PacketData = Encoding.UTF8.GetBytes(TotalData);
+            ConnectionManager.Instance.ServerConnection.Send(PacketData);
+        }
+    }
+
+    //Tracks the interval timer, transmitting all queued packets and resetting the timer whenever it reaches zero
+    public void UpdateQueue()
+    {
+        //Count down the timer
+        NextCommunication -= Time.deltaTime;
+
+        //Transmit packets and reset timer at zero
+        if (NextCommunication <= 0.0f)
+            TransmitPackets();
     }
 }

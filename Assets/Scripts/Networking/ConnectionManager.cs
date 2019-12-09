@@ -6,7 +6,6 @@
 
 using System;
 using System.Text;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,7 +15,7 @@ public class ConnectionManager : MonoBehaviour
     public static ConnectionManager Instance = null;
 
     //Store a list of packets queued up to be sent out to the server in the next communication interval
-    public PacketQueue PacketQueue = null;
+    public PacketQueue PacketQueue = new PacketQueue();
 
     //Server connection status
     public Boolean UseDebugServer = false;
@@ -24,10 +23,6 @@ public class ConnectionManager : MonoBehaviour
     private string DebugServerIP = "ws://203.221.43.175:5501";
     public WebSocket ServerConnection;
     private bool TryingToConnect = false;
-
-    public int LastPacketRecieved = 0;  //Identifier number of the last packet that we recieved from the game server
-    public int NextOutgoingPacketNumber = 0;    //Packet order number next being sent to the game server
-    private Dictionary<int, NetworkPacket> PreviousPackets = new Dictionary<int, NetworkPacket>(); //Dictionary storing the last 25 packets set to the game server
 
     //These flags are setin within the WebSocket networking events which are registered into the ServerConnection object
     static bool IsConnected = false;    //Tracks whether the connection the server is open or not
@@ -43,12 +38,12 @@ public class ConnectionManager : MonoBehaviour
     private float ConnectionTimeout = 10.0f;    //How long to wait for the connection to go through before announcing the servers are probably down
     private bool TimedOut = false;  //Flag set once we have announced that the connection to the server has timed out
 
+    public bool TransmitPackets = true;
+
     void Awake()
     {
         //Assign our singleton class instance
         Instance = this;
-        //Initialize our outgoing network packet queue
-        PacketQueue = new PacketQueue();
     }
 
     void Start()
@@ -65,6 +60,9 @@ public class ConnectionManager : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.G))
+            TransmitPackets = !TransmitPackets;
+
         //Wait for server connection to be established until it times out
         if (TryingToConnect)
             TryConnecting();
@@ -185,61 +183,5 @@ public class ConnectionManager : MonoBehaviour
             Log.Chat("Having trouble connecting, are the servers down?");
             TimedOut = true;
         }
-    }
-    
-    //Sends a message to the game server
-    public void SendPacket(string PacketData)
-    {
-        //Dont try sending anything if we arent connected to the server right now
-        if(IsConnected)
-        {
-            NetworkPacket NewPacket = new NetworkPacket(PacketData);
-            SendPacket(NewPacket);
-        }
-    }
-
-    public void SendPacket(NetworkPacket Packet)
-    {
-        //Set the order number for this packet, then place that at the start of the packet data
-        NextOutgoingPacketNumber++;
-        Packet.AddPacketOrderNumber(NextOutgoingPacketNumber);
-
-        //Store this packet into the previous packets dictionary, maintain the dictionary to only store the last 25 packets sent to the server
-        PreviousPackets.Add(NextOutgoingPacketNumber, Packet);
-        if (PreviousPackets.Count > 150)
-            PreviousPackets.Remove(NextOutgoingPacketNumber - 150);
-
-        //Convert the packet data into byte array then send it over to the game server
-        byte[] Payload = Encoding.UTF8.GetBytes(Packet.PacketData);
-        ServerConnection.Send(Payload);
-    }
-
-    //Transmits a missing packet back to the game server again
-    public void SendMissingPacket(int PacketNumber)
-    {
-        //First check that this missing packet is still stored in memory
-        if(!PreviousPackets.ContainsKey(PacketNumber))
-        {
-            //Log an error showing the server has requested packets that are no longer being stored in memory and that this connection needs to be closed down
-            Log.Chat("ERROR: Server requesting missing packet no longer in memory, our progress is going to be lost and our connection will be shut down.");
-
-            //Tell the server we are out of sync so they can kick us from the game and clean us up from the game world and exit out of the function while we wait for that to happen
-            SystemPacketSender.Instance.SendOutOfSyncAlert();
-            return;
-        }
-
-        //Otherwise, we fetch the missing packet from the dictionary
-        NetworkPacket MissingPacket = PreviousPackets[PacketNumber];
-
-        //Convert the packet data into bytes then sent it over to the game server
-        byte[] Payload = Encoding.UTF8.GetBytes(MissingPacket.PacketData);
-        ServerConnection.Send(Payload);
-    }
-
-    //Transmits a packet to the server immediately, bypassing the packet queue completely
-    public void SendPacketImmediately(NetworkPacket Packet)
-    {
-        byte[] Payload = Encoding.UTF8.GetBytes(Packet.PacketData);
-        ServerConnection.Send(Payload);
     }
 }
