@@ -79,6 +79,7 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         NetworkPacket Packet = new NetworkPacket();
         Packet.WriteType(ServerPacketType.RemoveRemotePlayer);
         Packet.WriteString(ReadFrom.ReadString());
+        Packet.WriteBool(ReadFrom.ReadBool());
         return Packet;
     }
 
@@ -89,9 +90,10 @@ public class PlayerManagementPacketHandler : MonoBehaviour
 
         //Read the relevant data values from the network packet
         string CharacterName = Packet.ReadString();
+        bool IsAlive = Packet.ReadBool();
 
         //Use the remote player manager to despawn this dead clients player character from our game world
-        PlayerManager.Instance.RemoveRemotePlayer(CharacterName);
+        PlayerManager.Instance.RemoveRemotePlayer(CharacterName, IsAlive);
     }
 
     public static NetworkPacket GetValuesAllowPlayerBegin(NetworkPacket ReadFrom)

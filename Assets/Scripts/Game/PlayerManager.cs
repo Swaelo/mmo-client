@@ -305,17 +305,22 @@ public class PlayerManager : MonoBehaviour
     /// Removes a remote player from the dictionary and destroys it
     /// </summary>
     /// <param name="PlayerName">Name of player to be removed</param>
-    public void RemoveRemotePlayer(string PlayerName)
+    public void RemoveRemotePlayer(string PlayerName, bool IsAlive)
     {
-        //Make sure we know about a character before we try to destroy it, if we dont know about it then it should be ignored
-        if (!RemotePlayers.ContainsKey(PlayerName))
+        //If the character is alive, see if they exist in the RemotePlayers dictionary
+        if(IsAlive && RemotePlayers.ContainsKey(PlayerName))
         {
-            Log.Chat("Ignoring request to remove unknown player: " + PlayerName);
-            return;
+            //Remove the remote clients living character from the game
+            GameObject.Destroy(RemotePlayers[PlayerName]);
+            RemotePlayers.Remove(PlayerName);
         }
-
-        GameObject.Destroy(RemotePlayers[PlayerName]);
-        RemotePlayers.Remove(PlayerName);
+        //If the character is dead, see if they exist in the RemotePlayerCorpses dictionary
+        else if(!IsAlive && RemotePlayerCorpses.ContainsKey(PlayerName))
+        {
+            //Remote the remote clients dead body from the game
+            GameObject.Destroy(RemotePlayerCorpses[PlayerName]);
+            RemotePlayerCorpses.Remove(PlayerName);
+        }
     }
 
     /// <summary>
