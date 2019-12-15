@@ -3,4 +3,6 @@ Library/
 Temp/
 obj/
 Assets/Scripts/Testing/
-Assets/Models/Chilli/
+Assets/Scripts/Testing.meta
+Assets/Scenes/Test.unity
+Assets/Scenes/Test.unity.meta
