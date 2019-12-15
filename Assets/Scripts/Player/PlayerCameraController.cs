@@ -18,7 +18,7 @@ public class PlayerCameraController : MonoBehaviour
     private float MinimumCameraDistance = 1.0f;
     private float MaximumCameraDistance = 8.0f;
 
-    //Current/Min and Max rotation values that are allowed, adjusted while moving the cursor and holding down the RMB
+    //Current/Min and Max rotation values that are allowed, adjusted while moving the cursor and holding down the LMB
     public float CurrentXRotation = 0f;
     public float CurrentYRotation = 0f;
     private float MinimumYRotation = -20f;
@@ -38,10 +38,14 @@ public class PlayerCameraController : MonoBehaviour
     //How often to send our updated camera values to the game server
     private float CameraUpdateInterval = 5.0f;
     private float NextCameraUpdate = 5.0f;
+
     //Store which values were previously broadcasted to the game server
     private float LastZoomUpdate = 0f;
     private float LastXRotationUpdate = 0f;
     private float LastYRotationUpdate = 0f;
+
+    //Track when the mouse cursor is locked to the window
+    private bool CursorLocked = false;
 
     //Fetch and store the current camera rotation values when the scene first begins
     private void Start()
@@ -53,82 +57,59 @@ public class PlayerCameraController : MonoBehaviour
 
     private void Update()
     {
-        //Lock and hide the cursor when the user starts holding the RMB down
-        if (Input.GetMouseButtonDown(1))
+        ToggleCursorLock();
+    }
+
+    private void ToggleCursorLock()
+    {
+        //Click on the screen somewhere to enable the cursor lock
+        if (!CursorLocked && Input.GetMouseButtonDown(0))
         {
-            Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+            CursorLocked = true;
         }
 
-        //Unlock and view the cursor when they release the RMB
-        if (Input.GetMouseButtonUp(1))
+        //Press escape to disable the cursor lock
+        if (CursorLocked && Input.GetKeyDown(KeyCode.Escape))
         {
-            Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-        }
-
-        //Count down the timer for transmitting new values to the server
-        NextCameraUpdate -= Time.deltaTime;
-        if(NextCameraUpdate <= 0f)
-        {
-            //Reset the transmission timer
-            NextCameraUpdate = CameraUpdateInterval;
-
-            //Check if any values have changed since we last sent them to the game server
-            bool NewValues = LastZoomUpdate != CurrentCameraDistance ||
-                LastXRotationUpdate != CurrentXRotation ||
-                LastYRotationUpdate != CurrentYRotation;
-
-            //Send out current values to the server if they have changed
-            if(NewValues)
-            {
-                //Send the current values
-                if(PlayerManagementPacketSender.Instance != null)
-                    PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
-
-                //Store them all as being those that were last sent to the server
-                LastZoomUpdate = CurrentCameraDistance;
-                LastXRotationUpdate = CurrentXRotation;
-                LastYRotationUpdate = CurrentYRotation;
-            }
+            CursorLocked = false;
         }
     }
 
     private void LateUpdate()
     {
-        //If we have new values that the camera needs to be set to then we apply those this frame and ignore any player input until the next frame
-        if(NewValuesToSet)
-        {
-            //Force the camera to the new settings values, then disable the flag after the values have been updated
-            CurrentXRotation = NewXRotation;
-            CurrentYRotation = NewYRotation;
-            CurrentCameraDistance = NewCameraDistance;
-            NewValuesToSet = false;
-        }
-        //If not, then we just track user input to update camera values as normal
+        //Set camera to some specific values if some have been provided
+        if (NewValuesToSet)
+            SetNewValues();
+        //Otherwise we just track input to update camera values as normal
         else
         {
-            //Update the camera X and Y rotation values based on cursor movement whenever the RMB is being held down
             RotateCamera();
-            //Update the cameras zoom level based on mouse wheel input
             ZoomCamera();
         }
 
-        //Compute new updated target position and rotation values for the camera
-        Quaternion TargetRotation = Quaternion.Euler(CurrentYRotation, CurrentXRotation, 0f);
-        Vector3 TargetPosition = TargetRotation * new Vector3(0f, 0f, -CurrentCameraDistance) + CameraPivotTarget.transform.position;
-
-        //Apply these new values to set the camera to its target location
-        transform.position = TargetPosition;
-        transform.rotation = TargetRotation;
+        //Compute and apply new camera position/rotation values
+        Quaternion NewRotation = Quaternion.Euler(CurrentYRotation, CurrentXRotation, 0f);
+        Vector3 NewPosition = NewRotation * new Vector3(0f, 0f, -CurrentCameraDistance) + CameraPivotTarget.transform.position;
+        transform.position = NewPosition;
+        transform.rotation = NewRotation;
     }
 
-    //While RMB is held down, track cursor movement and use that to change the cameras rotation
+    private void SetNewValues()
+    {
+        CurrentXRotation = NewXRotation;
+        CurrentYRotation = NewYRotation;
+        CurrentCameraDistance = NewCameraDistance;
+        NewValuesToSet = false;
+    }
+
+    //While LMB is held down, track cursor movement and use that to change the cameras rotation
     private void RotateCamera()
     {
-        if (Input.GetMouseButton(1))
+        //Only rotate the camera around while the cursor is locked
+        if(CursorLocked)
         {
-            //Holding RMB + moving the cursor will rotate the camera around the players pivot point
             CurrentXRotation += Input.GetAxis("Mouse X") * MouseXSpeed * CurrentCameraDistance * MouseDampening;
             CurrentYRotation -= Input.GetAxis("Mouse Y") * MouseYSpeed * MouseDampening;
             CurrentYRotation = ClampAngle(CurrentYRotation, MinimumYRotation, MaximumYRotation);
@@ -171,3 +152,37 @@ public class PlayerCameraController : MonoBehaviour
         NewValuesToSet = true;
     }
 }
+
+
+
+
+
+//private void Update()
+//{
+
+//    ////Count down the timer for transmitting new values to the server
+//    //NextCameraUpdate -= Time.deltaTime;
+//    //if(NextCameraUpdate <= 0f)
+//    //{
+//    //    //Reset the transmission timer
+//    //    NextCameraUpdate = CameraUpdateInterval;
+
+//    //    //Check if any values have changed since we last sent them to the game server
+//    //    bool NewValues = LastZoomUpdate != CurrentCameraDistance ||
+//    //        LastXRotationUpdate != CurrentXRotation ||
+//    //        LastYRotationUpdate != CurrentYRotation;
+
+//    //    //Send out current values to the server if they have changed
+//    //    if(NewValues)
+//    //    {
+//    //        //Send the current values
+//    //        if(PlayerManagementPacketSender.Instance != null)
+//    //            PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
+
+//    //        //Store them all as being those that were last sent to the server
+//    //        LastZoomUpdate = CurrentCameraDistance;
+//    //        LastXRotationUpdate = CurrentXRotation;
+//    //        LastYRotationUpdate = CurrentYRotation;
+//    //    }
+//    //}
+//}

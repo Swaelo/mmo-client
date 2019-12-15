@@ -27,6 +27,11 @@ public class RemotePlayerController : MonoBehaviour
     private int Max = 10;
     private TextMesh HealthDisplay = null;
 
+    //Set when forcing the character to move to a new location, performed in the RespawnRemotePlayer function to ensure they get moved to their spawn location on our end
+    private bool ForceMove = false;
+    private Vector3 ForceMovePos;
+    private Quaternion ForceMoveRot;
+
     private void Awake()
     {
         ServerPosition = transform.position;
@@ -40,21 +45,56 @@ public class RemotePlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //Move toward the target location if we arent there yet
-        Vector3 Offset = ServerPosition - transform.position;
-        if(Offset.magnitude > .1f)
+        //Force set the values when told to
+        if(ForceMove)
         {
-            Offset = Offset.normalized * MoveSpeed;
-            Controller.Move(Offset * Time.deltaTime);
+            transform.position = ForceMovePos;
+            transform.rotation = ForceMoveRot;
+            ForceMove = false;
+
+            //Send empty values to the animation controller
+            Animator.SetFloat("DistanceTravelled", 0);
+            Animator.SetBool("IsGrounded", true);
         }
-        //Move toward matching our rotation on the server
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, ServerRotation, TurnSpeed * Time.deltaTime);
-        //Send values to the animation controller
-        Animator.SetFloat("DistanceTravelled", Vector3.Distance(transform.position, PreviousPosition));
-        Animator.SetBool("IsGrounded", IsGrounded());
-        //Store position for next updates distance calculation
-        PreviousPosition = transform.position;
+        //Otherwise move normally
+        else
+        {
+            //Move toward the target location if we arent there yet
+            Vector3 Offset = ServerPosition - transform.position;
+            if(Offset.magnitude > .1f)
+            {
+                Offset = Offset.normalized * MoveSpeed;
+                Controller.Move(Offset * Time.fixedDeltaTime);
+            }
+
+            //Turn toward matching our rotation on the server
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, ServerRotation, TurnSpeed * Time.fixedDeltaTime);
+
+            //Send movement values to the animation controller
+            Animator.SetFloat("DistanceTravelled", Vector3.Distance(transform.position, PreviousPosition));
+            Animator.SetBool("IsGrounded", IsGrounded());
+
+            //Store position for distance check in next update
+            PreviousPosition = transform.position;
+        }
     }
+
+    //Forces the player to move to a set location/rotation on the next LateUpdate
+    public void ForceSetValues(Vector3 NewPosition, Quaternion NewRotation)
+    {
+        //Store the values to apply in the next LateUpdate
+        ForceMove = true;
+        ForceMovePos = NewPosition;
+        ForceMoveRot = NewRotation;
+
+        //Set these new values as whats on the server side also
+        ServerPosition = NewPosition;
+        ServerRotation = NewRotation;
+
+        //Reset the health back to full
+        Health = Max;
+        HealthDisplay.text = Health + "/" + Max;
+}
 
     public void SetValues(Vector3 Position, Quaternion Rotation, int CurrentHealth, int MaxHealth)
     {

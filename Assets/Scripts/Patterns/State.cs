@@ -13,7 +13,7 @@ public class State : MonoBehaviour
     public StateMachine Machine;
 
     //Used for checking if a given state has been defined correctly and is valid for use before changing to it
-    public static implicit operator bool (State State)
+    public static implicit operator bool(State State)
     {
         return State != null;
     }
@@ -31,6 +31,8 @@ public class State : MonoBehaviour
     protected virtual void OnStateExit() { }
     protected virtual void OnStateEnter() { }
     protected virtual void OnStateUpdate() { }
+    protected virtual void OnStateLateUpdate() { }
+    protected virtual void OnStateFixedUpdate() { }
 
     //Called by the StateMachine when it enters into this State
     public void StateEnter()
@@ -49,5 +51,15 @@ public class State : MonoBehaviour
     public void StateUpdate()
     {
         OnStateUpdate();
+    }
+
+    public void StateLateUpdate()
+    {
+        OnStateLateUpdate();
+    }
+
+    public void StateFixedUpdate()
+    {
+        OnStateFixedUpdate();
     }
 }

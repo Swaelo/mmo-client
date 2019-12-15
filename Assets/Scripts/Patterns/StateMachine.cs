@@ -20,7 +20,7 @@ public class StateMachine : MonoBehaviour
     }
 
     //Returns the current state object
-    public State GetCurrentState { get { return CurrentState; }}
+    public State GetCurrentState { get { return CurrentState; } }
 
     //Switches the current state to a specific state object
     public virtual bool SetState(State NewState)
@@ -28,11 +28,11 @@ public class StateMachine : MonoBehaviour
         bool Success = false;
 
         //Switch to the new state if its valid and its not already the current state
-        if(NewState && NewState != CurrentState)
+        if (NewState && NewState != CurrentState)
         {
             State OldState = CurrentState;
             CurrentState = NewState;
-            if(OldState)
+            if (OldState)
                 OldState.StateExit();
             CurrentState.StateEnter();
             Success = true;
@@ -42,15 +42,15 @@ public class StateMachine : MonoBehaviour
     }
 
     //Switches the current state to a state of the the given type
-    public virtual bool SetState<StateType> () where StateType : State
+    public virtual bool SetState<StateType>() where StateType : State
     {
         bool Success = false;
 
         //Search through the list of available state for one which matches the given type
-        foreach(State State in States)
+        foreach (State State in States)
         {
             //If we find a matching state then swap to that one
-            if(State is StateType)
+            if (State is StateType)
             {
                 Success = SetState(State);
                 return Success;
@@ -59,7 +59,7 @@ public class StateMachine : MonoBehaviour
 
         //If we couldnt find any matching state check if there is one on this gameObject
         State StateComponent = GetComponent<StateType>();
-        if(StateComponent)
+        if (StateComponent)
         {
             //Update to this state if it was found on the gameObject
             StateComponent.Initialize(this);

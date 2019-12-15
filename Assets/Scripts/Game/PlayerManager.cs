@@ -83,7 +83,7 @@ public class PlayerManager : MonoBehaviour
 
         //Re-enable the local player character and set their values to what has been provided
         LocalPlayer.SetActive(true);
-        LocalPlayer.GetComponent<PlayerCharacterController>().SetPlayer(Position, Rotation);
+        LocalPlayer.GetComponent<LocalPlayerController>().Respawn(Position, Rotation);
         LocalPlayer.transform.Find("Player Camera").GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraX, CameraY);
     }
 
@@ -101,15 +101,10 @@ public class PlayerManager : MonoBehaviour
         GameObject.Destroy(RemotePlayerCorpses[CharacterName]);
         RemotePlayerCorpses.Remove(CharacterName);
 
-        //Reenable and reposition their player character object
+        //Re-enable their player character and instruct it to move to the new location immediately
         GameObject RemotePlayerCharacter = RemotePlayers[CharacterName];
         RemotePlayerCharacter.SetActive(true);
-        RemotePlayerCharacter.transform.position = Position;
-        RemotePlayerCharacter.transform.rotation = Rotation;
-        RemotePlayerController RemotePlayer = RemotePlayerCharacter.GetComponent<RemotePlayerController>();
-        RemotePlayer.UpdatePosition(Position);
-        RemotePlayer.UpdateRotation(Rotation);
-        RemotePlayer.UpdateHealth(10);
+        RemotePlayerCharacter.GetComponent<RemotePlayerController>().ForceSetValues(Position, Rotation);
     }
 
     //Disables all controls of the local player character and turns them into a ragdoll now that they are dead
