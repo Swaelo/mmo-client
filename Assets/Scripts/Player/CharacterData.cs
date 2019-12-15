@@ -12,7 +12,6 @@ public class CharacterData
     public string Name = ""; //Characters name
     public bool NewPosition = false;
     public Vector3 Position = new Vector3();    //Characters position in the world
-    public Vector3 Movement = new Vector3();    //Characters current input movement vector
     public Quaternion Rotation = new Quaternion(); //Character current rotation
     public float CameraZoom = 0f;    //How far this characters camera is zoomed out
     public float CameraXRotation = 0f;   //Character cameras current X Rotation value

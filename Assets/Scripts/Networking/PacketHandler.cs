@@ -48,16 +48,18 @@ public class PacketHandler : MonoBehaviour
         PacketHandlers.Add(ServerPacketType.PlayerChatMessage, PlayerCommunicationPacketHandler.HandleChatMessage);
 
         //Player Management Packet Handlers
-        PacketHandlers.Add(ServerPacketType.UpdateRemotePlayer, PlayerManagementPacketHandler.HandleUpdateRemotePlayer);
-        PacketHandlers.Add(ServerPacketType.AddRemotePlayer, PlayerManagementPacketHandler.HandleAddRemotePlayer);
-        PacketHandlers.Add(ServerPacketType.RemoveRemotePlayer, PlayerManagementPacketHandler.HandleRemoveRemotePlayer);
+        PacketHandlers.Add(ServerPacketType.PlayerPositionUpdate, PlayerManagementPacketHandler.HandlePlayerPositionUpdate);
+        PacketHandlers.Add(ServerPacketType.PlayerRotationUpdate, PlayerManagementPacketHandler.HandlePlayerRotationUpdate);
+        PacketHandlers.Add(ServerPacketType.AddPlayer, PlayerManagementPacketHandler.HandleAddRemotePlayer);
+        PacketHandlers.Add(ServerPacketType.RemovePlayer, PlayerManagementPacketHandler.HandleRemoveRemotePlayer);
         PacketHandlers.Add(ServerPacketType.AllowPlayerBegin, PlayerManagementPacketHandler.HandleAllowPlayerBegin);
-        PacketHandlers.Add(ServerPacketType.RemotePlayerPlayAnimationAlert, PlayerManagementPacketHandler.HandleRemotePlayerPlayAnimation);
+        PacketHandlers.Add(ServerPacketType.PlayAnimationAlert, PlayerManagementPacketHandler.HandleRemotePlayerPlayAnimation);
 
         //System Packet Handlers
         PacketHandlers.Add(ServerPacketType.StillConnectedCheck, SystemPacketHandler.HandleStillConnectedCheck);
         PacketHandlers.Add(ServerPacketType.MissingPacketsRequest, SystemPacketHandler.HandleMissingPacketsRequest);
         PacketHandlers.Add(ServerPacketType.KickedFromServer, SystemPacketHandler.HandleKickedFromServer);
+        PacketHandlers.Add(ServerPacketType.UIMessage, SystemPacketHandler.HandleUIMessage);
 
         //Combat Packet Handlers
         PacketHandlers.Add(ServerPacketType.LocalPlayerTakeHit, CombatPacketHandler.HandleLocalPlayerTakeHit);
@@ -101,15 +103,17 @@ public class PacketHandler : MonoBehaviour
                 return PlayerCommunicationPacketHandler.GetValuesChatMessage(ReadFrom);
 
             //Player Management
-            case (ServerPacketType.UpdateRemotePlayer):
-                return PlayerManagementPacketHandler.GetValuesUpdateRemotePlayer(ReadFrom);
-            case (ServerPacketType.AddRemotePlayer):
+            case (ServerPacketType.PlayerPositionUpdate):
+                return PlayerManagementPacketHandler.GetValuesPlayerPositionUpdate(ReadFrom);
+            case (ServerPacketType.PlayerRotationUpdate):
+                return PlayerManagementPacketHandler.GetValuesPlayerRotationUpdate(ReadFrom);
+            case (ServerPacketType.AddPlayer):
                 return PlayerManagementPacketHandler.GetValuesAddRemotePlayer(ReadFrom);
-            case (ServerPacketType.RemoveRemotePlayer):
+            case (ServerPacketType.RemovePlayer):
                 return PlayerManagementPacketHandler.GetValuesRemoveRemotePlayer(ReadFrom);
             case (ServerPacketType.AllowPlayerBegin):
                 return PlayerManagementPacketHandler.GetValuesAllowPlayerBegin(ReadFrom);
-            case (ServerPacketType.RemotePlayerPlayAnimationAlert):
+            case (ServerPacketType.PlayAnimationAlert):
                 return PlayerManagementPacketHandler.GetValuesRemotePlayerPlayAnimation(ReadFrom);
 
             //System
@@ -119,6 +123,8 @@ public class PacketHandler : MonoBehaviour
                 return SystemPacketHandler.GetValuesMissingPacketsRequest(ReadFrom);
             case (ServerPacketType.KickedFromServer):
                 return SystemPacketHandler.GetValuesKickedFromServer(ReadFrom);
+            case (ServerPacketType.UIMessage):
+                return SystemPacketHandler.GetValuesUIMessage(ReadFrom);
 
             //Combat
             case (ServerPacketType.LocalPlayerTakeHit):
@@ -178,7 +184,6 @@ public class PacketHandler : MonoBehaviour
             {
                 //Tell the server what we need resent and disregard everything else in this packet
                 SystemPacketSender.Instance.SendMissedPacketsRequest(ExpectedOrderNumber);
-
                 return;
             }
         }

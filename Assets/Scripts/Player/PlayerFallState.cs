@@ -42,7 +42,7 @@ public class PlayerFallState : State
     protected override void OnStateUpdate()
     {
         //Use different update method ignoring all user input while player is typing a message into the chat
-        if (ChatMessageInput.Instance.IsTyping)
+        if (ChatMessageInput.Instance != null && ChatMessageInput.Instance.IsTyping)
         {
             UpdateNoInput();
             return;
@@ -55,7 +55,8 @@ public class PlayerFallState : State
         if (!DoubleJumped && Input.GetKeyDown(KeyCode.Space))
         {
             //Update the animator to perform the flip animation and set the double jump flag so they cant jump again
-            PlayerManagementPacketSender.Instance.SendPlayAnimationAlert("Flip");
+            if(PlayerManagementPacketSender.Instance != null)
+                PlayerManagementPacketSender.Instance.SendPlayAnimationAlert("Flip");
             Controller.AnimatorComponent.SetTrigger("DoubleJump");
             DoubleJumped = true;
 

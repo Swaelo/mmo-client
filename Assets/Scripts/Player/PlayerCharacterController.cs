@@ -42,12 +42,10 @@ public class PlayerCharacterController : MonoBehaviour
     private Vector3 PreviousXZ;
 
     //How often to send our updated position/rotation/movement input values to the game server
-    private float PlayerUpdateInterval = 0.25f;
-    private float NextPlayerUpdate = 0.25f;
-    //Store which values were previously broadcasted to the game server
-    private Vector3 LastPositionUpdate = Vector3.zero;
-    private Vector3 LastMovementUpdate = Vector3.zero;
-    private Quaternion LastRotationUpdate = Quaternion.identity;
+    private float PlayerUpdateInterval = 0.1f;
+    private float NextPlayerUpdate = 0.1f;
+    private Vector3 PreviousPositionBroadcast;
+    private Quaternion PreviousRotationBroadcast;
 
     //Set when forcing the character to move to a new location, performed in the LateUpdate function so its not overridden by the CharacterController movement
     private bool ForceMove = false;
@@ -57,6 +55,8 @@ public class PlayerCharacterController : MonoBehaviour
     public void Awake()
     {
         PreviousXZ = new Vector3(transform.position.x, 0f, transform.position.z);
+        PreviousPositionBroadcast = new Vector3(transform.position.x, transform.position.y, -transform.position.z); //Unity and Bepu have reversed Z axis directions, so we flip this here
+        PreviousRotationBroadcast = transform.rotation;
     }
 
     public void Update()
@@ -67,28 +67,22 @@ public class PlayerCharacterController : MonoBehaviour
         //Tell the state machine to update the current state
         Machine.GetCurrentState.StateUpdate();
 
-        //Count down the timer for transmitting new values to the server
+        //Share the current position/rotation with the server every 10ms
         NextPlayerUpdate -= Time.deltaTime;
         if(NextPlayerUpdate <= 0f)
         {
-            //Reset the transmission timer
             NextPlayerUpdate = PlayerUpdateInterval;
+            Vector3 CurrentPosFlipZ = new Vector3(transform.position.x, transform.position.y, -transform.position.z);   //Unity and Bepu have reversed Z axis directions, so we flip this here
 
-            //Check if any values have changed since we last sent them to the game server
-            bool NewValues = LastPositionUpdate != transform.position ||
-                LastMovementUpdate != NewMovementVector ||
-                LastRotationUpdate != transform.rotation;
-
-            //Send our current values to the server if they have changed
-            if(NewValues)
+            if (CurrentPosFlipZ != PreviousPositionBroadcast && PlayerManagementPacketSender.Instance != null)
             {
-                //Send the current values
-                PlayerManagementPacketSender.Instance.SendLocalPlayerCharacterUpdate(transform.position, NewMovementVector, transform.rotation);
-
-                //Store them all as being those that were last sent to the server
-                LastPositionUpdate = transform.position;
-                LastMovementUpdate = NewMovementVector;
-                LastRotationUpdate = transform.rotation;
+                PlayerManagementPacketSender.Instance.SendPlayerPositionUpdate(CurrentPosFlipZ);
+                PreviousPositionBroadcast = CurrentPosFlipZ;
+            }
+            if(transform.rotation != PreviousRotationBroadcast && PlayerManagementPacketSender.Instance != null)
+            {
+                PlayerManagementPacketSender.Instance.SendPlayerRotationUpdate(transform.rotation);
+                PreviousRotationBroadcast = transform.rotation;
             }
         }
     }

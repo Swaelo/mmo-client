@@ -66,4 +66,18 @@ public class SystemPacketHandler : MonoBehaviour
         //Now change to the scene showing the user they have been kicked from the game
         SceneManager.LoadScene("Kicked");
     }
+
+    public static NetworkPacket GetValuesUIMessage(NetworkPacket ReadFrom)
+    {
+        NetworkPacket Packet = new NetworkPacket();
+        Packet.WriteType(ServerPacketType.UIMessage);
+        Packet.WriteString(ReadFrom.ReadString());
+        return Packet;
+    }
+
+    public static void HandleUIMessage(ref NetworkPacket Packet)
+    {
+        string MessageContent = Packet.ReadString();
+        UIServerMessageDisplay.Instance.DisplayMessage(MessageContent);
+    }
 }

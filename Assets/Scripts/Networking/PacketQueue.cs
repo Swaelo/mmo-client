@@ -11,8 +11,8 @@ using UnityEngine.SceneManagement;
 
 public class PacketQueue
 {
-    private float CommunicationInterval = 0.5f;   //How often the outgoing packets queue is transmitted to the server
-    private float NextCommunication = 0.5f;   //Time left until we transmit queued packets to the server
+    private float CommunicationInterval = 0.1f;   //How often the outgoing packets queue is transmitted to the server
+    private float NextCommunication = 0.1f;   //Time left until we transmit queued packets to the server
     //Order number for the next packet to be sent to the server
     private int MostPreviousPacketNumber = 0;
     private int GetNextOutgoingPacketNumber() { return ++MostPreviousPacketNumber; }
@@ -42,7 +42,7 @@ public class PacketQueue
     }
 
     //Copy all outgoing packets into a brand new array, then transmit them all to the server (or, resend all the packets since the last missing packet if they requested that)
-    public void TransmitPackets()
+    public void TransmitPackets(bool Transmit)
     {
         //Copy the current outgoing packet queue into a new array, then reset it so packets can keep getting queued into it
         Dictionary<int, NetworkPacket> TransmissionQueue = new Dictionary<int, NetworkPacket>(OutgoingPacketQueue);
@@ -74,14 +74,14 @@ public class PacketQueue
             }
 
             //Loop from the first missing packet number, all the way to the most previously queued packet and all all of their data into the string
-            for (int i = ResendStartNumber; i < MostPreviousPacketNumber; i++)
+            for (int i = ResendStartNumber; i < MostPreviousPacketNumber + 1; i++)
                 TotalData += PacketHistory[i].PacketData;
 
             PacketsToResend = false;
         }
 
         //Now transmit all this data to the server if theres anything to send
-        if(TotalData != "")
+        if(TotalData != "" && Transmit)
         {
             //Convert the data into byte array then send it over to the game server
             byte[] PacketData = Encoding.UTF8.GetBytes(TotalData);
@@ -90,7 +90,7 @@ public class PacketQueue
     }
 
     //Tracks the interval timer, transmitting all queued packets and resetting the timer whenever it reaches zero
-    public void UpdateQueue()
+    public void UpdateQueue(bool Transmit)
     {
         //Count down the timer
         NextCommunication -= Time.deltaTime;
@@ -98,7 +98,7 @@ public class PacketQueue
         //Transmit packets and reset timer at zero
         if (NextCommunication <= 0.0f)
         {
-            TransmitPackets();
+            TransmitPackets(Transmit);
             NextCommunication = CommunicationInterval;
         }
     }

@@ -83,7 +83,8 @@ public class PlayerCameraController : MonoBehaviour
             if(NewValues)
             {
                 //Send the current values
-                PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
+                if(PlayerManagementPacketSender.Instance != null)
+                    PlayerManagementPacketSender.Instance.SendLocalPlayerCameraUpdate(CurrentCameraDistance, CurrentXRotation, CurrentYRotation);
 
                 //Store them all as being those that were last sent to the server
                 LastZoomUpdate = CurrentCameraDistance;

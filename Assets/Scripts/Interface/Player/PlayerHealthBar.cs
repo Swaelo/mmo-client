@@ -22,8 +22,11 @@ public class PlayerHealthBar : MonoBehaviour
     {
         //Fetch the initial values from the GameState
         GameState GameState = GameState.Instance;
-        CurrentHP = GameState.SelectedCharacter.CurrentHealth;
-        MaxHP = GameState.SelectedCharacter.MaxHealth;
+        if(GameState != null)
+        {
+            CurrentHP = GameState.SelectedCharacter.CurrentHealth;
+            MaxHP = GameState.SelectedCharacter.MaxHealth;
+        }
         //Initialize the health bar and set it as active
         HealthBarLength = (Screen.width / 4) * (CurrentHP / (float)MaxHP);
         HealthBarActive = true;

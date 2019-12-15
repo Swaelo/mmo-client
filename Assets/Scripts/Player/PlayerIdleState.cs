@@ -9,7 +9,7 @@ using UnityEngine;
 public class PlayerIdleState : State
 {
     //Acquire and store a reference to the PlayerController class once the game starts so we always have access to it
-    private PlayerCharacterController Controller;
+    private PlayerCharacterController Controller = null;
     private void Awake() { Controller = GetComponent<PlayerCharacterController>(); }
 
     protected override void OnStateInitialize(StateMachine Machine = null)
@@ -20,7 +20,8 @@ public class PlayerIdleState : State
     protected override void OnStateEnter()
     {
         //Update the animator so it should be playing the idle animation
-        Controller.AnimatorComponent.SetBool("IsGrounded", true);
+        if(Controller != null)
+            Controller.AnimatorComponent.SetBool("IsGrounded", true);
     }
 
     protected override void OnStateExit()
@@ -31,7 +32,7 @@ public class PlayerIdleState : State
     protected override void OnStateUpdate()
     {
         //Run a seperate update method ignore all user input while they are typing a message into the chat log
-        if (ChatMessageInput.Instance.IsTyping)
+        if (ChatMessageInput.Instance != null && ChatMessageInput.Instance.IsTyping)
         {
             UpdateNoInput();
             return;

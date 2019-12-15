@@ -84,6 +84,7 @@
     <Compile Include="Assets\Scripts\Interface\MenuUINavigation.cs" />
     <Compile Include="Assets\Scripts\Interface\Player\PlayerHealthBar.cs" />
     <Compile Include="Assets\Scripts\Interface\UIButtonFunctions.cs" />
+    <Compile Include="Assets\Scripts\Interface\UIServerMessageDisplay.cs" />
     <Compile Include="Assets\Scripts\Networking\ConnectionManager.cs" />
     <Compile Include="Assets\Scripts\Networking\KickReason.cs" />
     <Compile Include="Assets\Scripts\Networking\NetworkPacket.cs" />
@@ -111,6 +112,9 @@
     <Compile Include="Assets\Scripts\Player\PlayerIdleState.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMoveState.cs" />
     <Compile Include="Assets\Scripts\Player\RemotePlayerController.cs" />
+    <Compile Include="Assets\Scripts\Testing\SimpleCameraController.cs" />
+    <Compile Include="Assets\Scripts\Testing\SimplePlayerController.cs" />
+    <Compile Include="Assets\Scripts\Testing\WeaponManager.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Swaelo/Desktop/mmo-client/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>

@@ -19,7 +19,6 @@ public class GameWorldStatePacketHandler : MonoBehaviour
             Packet.WriteString(ReadFrom.ReadString());
             Packet.WriteBool(ReadFrom.ReadBool());
             Packet.WriteVector3(ReadFrom.ReadVector3());
-            Packet.WriteVector3(ReadFrom.ReadVector3());
             Packet.WriteQuaternion(ReadFrom.ReadQuaternion());
             Packet.WriteInt(ReadFrom.ReadInt());
             Packet.WriteInt(ReadFrom.ReadInt());
@@ -42,13 +41,12 @@ public class GameWorldStatePacketHandler : MonoBehaviour
             string CharacterName = Packet.ReadString();
             bool CharacterAlive = Packet.ReadBool();
             Vector3 CharacterPosition = Packet.ReadVector3();
-            Vector3 CharacterMovement = Packet.ReadVector3();
             Quaternion CharacterRotation = Packet.ReadQuaternion();
             int CharacterCurrentHP = Packet.ReadInt();
             int CharacterMaxHP = Packet.ReadInt();
 
             //Pass each characters information onto the PlayerManager so it can be spawned into the game world
-            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterAlive, CharacterPosition, CharacterMovement, CharacterRotation, CharacterCurrentHP, CharacterMaxHP);
+            PlayerManager.Instance.AddRemotePlayer(CharacterName, CharacterAlive, CharacterPosition, CharacterRotation, CharacterCurrentHP, CharacterMaxHP);
         }
 
         //Note that we have finished loading in the active player list

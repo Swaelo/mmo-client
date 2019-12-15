@@ -106,7 +106,10 @@ public class PlayerManager : MonoBehaviour
         RemotePlayerCharacter.SetActive(true);
         RemotePlayerCharacter.transform.position = Position;
         RemotePlayerCharacter.transform.rotation = Rotation;
-        RemotePlayerCharacter.GetComponent<RemotePlayerController>().UpdateValues(Position, Vector3.zero, Rotation, 10, 10);
+        RemotePlayerController RemotePlayer = RemotePlayerCharacter.GetComponent<RemotePlayerController>();
+        RemotePlayer.UpdatePosition(Position);
+        RemotePlayer.UpdateRotation(Rotation);
+        RemotePlayer.UpdateHealth(10);
     }
 
     //Disables all controls of the local player character and turns them into a ragdoll now that they are dead
@@ -276,7 +279,7 @@ public class PlayerManager : MonoBehaviour
     /// </summary>
     /// <param name="PlayerName">The name of the character being added</param>
     /// <param name="PlayerLocation">The characters initial starting location</param>
-    public void AddRemotePlayer(string PlayerName, bool CharacterAlive, Vector3 PlayerLocation, Vector3 PlayerMovement, Quaternion PlayerRotation, int CurrentHP, int MaxHP)
+    public void AddRemotePlayer(string PlayerName, bool CharacterAlive, Vector3 PlayerLocation, Quaternion PlayerRotation, int CurrentHP, int MaxHP)
     {
         //Requests to add players we already know about should be ignored
         if (RemotePlayers.ContainsKey(PlayerName))
@@ -288,7 +291,7 @@ public class PlayerManager : MonoBehaviour
         //Spawn a new remote player object into the game world using the prefab manager, make sure they are set at the right starting location
         GameObject RemotePlayer = GameObject.Instantiate(PrefabManager.Instance.RemotePlayerPrefab, PlayerLocation, PlayerRotation);
         RemotePlayerController RemoteController = RemotePlayer.GetComponent<RemotePlayerController>();
-        RemoteController.UpdateValues(PlayerLocation, PlayerMovement, PlayerRotation, CurrentHP, MaxHP);
+        RemoteController.SetValues(PlayerLocation, PlayerRotation, CurrentHP, MaxHP);
 
         //Update the character name displayed above the new characters head
         TextMesh PlayerNameDisplay = RemotePlayer.transform.Find("Character Name").GetComponent<TextMesh>();
@@ -323,25 +326,37 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Function for updating a remote players values
-    /// </summary>
-    /// <param name="Name">Name of the remote player we are updating</param>
-    /// <param name="Location">The remote players new location</param>
-    /// <param name="Movement">The remote players new movement input</param>
-    /// <param name="Rotation">The remote players new rotation</param>
-    public void UpdateRemotePlayer(string Name, Vector3 Location, Vector3 Movement, Quaternion Rotation, int CurrentHealth, int MaxHealth)
+    public void UpdatePlayerPosition(string Name, Vector3 Position)
     {
-        //Make sure this player exists in our game world before we try updating them
         if (RemotePlayers.ContainsKey(Name))
-            RemotePlayers[Name].GetComponent<RemotePlayerController>().UpdateValues(Location, Movement, Rotation, CurrentHealth, MaxHealth);
-        //If we dont have this player in our world yet then we need to have them added now
-        else
-        {
-            Log.Chat("Ignoring request to update unknown player: " + Name);
-            return;
-        }
+            RemotePlayers[Name].GetComponent<RemotePlayerController>().UpdatePosition(Position);
     }
+
+    public void UpdatePlayerRotation(string Name, Quaternion Rotation)
+    {
+        if (RemotePlayers.ContainsKey(Name))
+            RemotePlayers[Name].GetComponent<RemotePlayerController>().UpdateRotation(Rotation);
+    }
+
+    ///// <summary>
+    ///// Function for updating a remote players values
+    ///// </summary>
+    ///// <param name="Name">Name of the remote player we are updating</param>
+    ///// <param name="Location">The remote players new location</param>
+    ///// <param name="Movement">The remote players new movement input</param>
+    ///// <param name="Rotation">The remote players new rotation</param>
+    //public void UpdateRemotePlayer(string Name, Vector3 Location, Quaternion Rotation, int CurrentHealth, int MaxHealth)
+    //{
+    //    //Make sure this player exists in our game world before we try updating them
+    //    if (RemotePlayers.ContainsKey(Name))
+    //        RemotePlayers[Name].GetComponent<RemotePlayerController>().UpdateValues(Location, Rotation, CurrentHealth, MaxHealth);
+    //    //If we dont have this player in our world yet then we need to have them added now
+    //    else
+    //    {
+    //        Log.Chat("Ignoring request to update unknown player: " + Name);
+    //        return;
+    //    }
+    //}
 
     public void RemotePlayerPlayAnimation(string CharacterName, string AnimationName)
     {

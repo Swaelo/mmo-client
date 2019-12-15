@@ -9,118 +9,80 @@ using UnityEngine.UI;
 
 public class RemotePlayerController : MonoBehaviour
 {
-    //Movement Control
-    private CharacterController MovementController; //Used to move the player around the scene
-    private float MovementSpeed = 5f;   //How fast the player moves through the game world
-    private float RotationSpeed = 300f; //How fast the player turns around
+    //Movement Settings
+    private CharacterController Controller;
+    private float MoveSpeed = 5f;
+    private float TurnSpeed = 300f;
+
     //Animation Control
-    private Animator AnimationController;   //Used to control the players animation states
-    private Vector3 PreviousFramePosition;  //For computing distance travelled over time, sent to animation controller for idle/moving state transitions
-    //Values last sent to us from the game server and if they are new needing to be processed
-    private Vector3 ServerSidePosition = Vector3.zero;
-    private Quaternion ServerSideRotation = Quaternion.identity;
-    private Vector3 ServerSideMovement = Vector3.zero;
-    private bool NewPosition = false;
-    //Players health values and the UI object used to display them
-    private int CurrentHealth = 10;
-    private int MaxHealth = 10;
-    private TextMesh HealthText = null;
+    private Animator Animator;
+    private Vector3 PreviousPosition;
+
+    //Most up to date values sent to us from the game server
+    private Vector3 ServerPosition;
+    private Quaternion ServerRotation;
+
+    //Health Values
+    private int Health = 10;
+    private int Max = 10;
+    private TextMesh HealthDisplay = null;
 
     private void Awake()
     {
-        //Assign references and set default values for member variables
-        MovementController = GetComponent<CharacterController>();
-        AnimationController = GetComponent<Animator>();
-        PreviousFramePosition = transform.position;
-        HealthText = transform.Find("Character Health").GetComponent<TextMesh>();
+        ServerPosition = transform.position;
+        ServerRotation = transform.rotation;
+
+        Controller = GetComponent<CharacterController>();
+        Animator = GetComponent<Animator>();
+        PreviousPosition = transform.position;
+        HealthDisplay = transform.Find("Character Health").GetComponent<TextMesh>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        //Snap player to new position values whenever they are provided from the server
-        if(NewPosition)
+        //Move toward the target location if we arent there yet
+        Vector3 Offset = ServerPosition - transform.position;
+        if(Offset.magnitude > .1f)
         {
-            //Check difference between current and new position value
-            float MovementDrift = Vector3.Distance(transform.position, ServerSidePosition);
-            //Snap players position if they have drifted too far
-            if (MovementDrift > 3f)
-                transform.position = ServerSidePosition;
-            //Turn off the new values flag now that its been updated
-            NewPosition = false;
+            Offset = Offset.normalized * MoveSpeed;
+            Controller.Move(Offset * Time.deltaTime);
         }
-        //Whenever Updating without having just recieved new position values from the server, we move the client where we think they will do
-        else
-        {
-            //Keep moving player in direction the server told us they are going
-            if(ServerSideMovement != Vector3.zero)
-            {
-                Vector3 MovementVector = ServerSideMovement * MovementSpeed * Time.deltaTime;
-                MovementController.Move(MovementVector);
-            }
-            else
-            {
-                //Lerp towards current server side position
-                transform.position = Vector3.Lerp(transform.position, ServerSidePosition, MovementSpeed * Time.deltaTime);
-            }
-
-            //Check if the player character is currently moving or not
-            bool IsMoving = Vector3.Distance(transform.position, PreviousFramePosition) > 0.1f;
-            //While they are moving rotate them to face in the same direction they are moving in
-            if(IsMoving)
-            {
-                Vector3 MovementDirection = PreviousFramePosition - transform.position;
-                Vector3 TargetPosition = transform.position - MovementDirection;
-                Vector3 TargetOffset = TargetPosition - transform.position;
-                TargetOffset = TargetOffset.normalized * MovementSpeed;
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, ComputeTargetRotation(TargetOffset), RotationSpeed * Time.deltaTime);
-            }
-            //While standing still, we lerp their rotation towards the server side rotation value
-            else
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, ServerSideRotation, RotationSpeed * Time.deltaTime);
-        }
-
-        //Calculate distance travelled since last frame update, and check if the player is standing on the ground or not
-        float DistanceTravelled = Vector3.Distance(transform.position, PreviousFramePosition);
-        bool OnGround = IsGrounded();
-        //Pass these values onto the animation controller so it knows when to transition between animation states correctly
-        AnimationController.SetFloat("DistanceTravelled", DistanceTravelled);
-        AnimationController.SetBool("IsGrounded", OnGround);
-
-        //Store the players current location for computing distance travelled in the next frame update
-        PreviousFramePosition = transform.position;
+        //Move toward matching our rotation on the server
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, ServerRotation, TurnSpeed * Time.deltaTime);
+        //Send values to the animation controller
+        Animator.SetFloat("DistanceTravelled", Vector3.Distance(transform.position, PreviousPosition));
+        Animator.SetBool("IsGrounded", IsGrounded());
+        //Store position for next updates distance calculation
+        PreviousPosition = transform.position;
     }
 
-    //Teleports the remote player to a new location
-    public void TeleportPlayer(Vector3 Position)
+    public void SetValues(Vector3 Position, Quaternion Rotation, int CurrentHealth, int MaxHealth)
     {
         transform.position = Position;
-        ServerSidePosition = Position;
-        ServerSideMovement = Vector3.zero;
+        ServerPosition = Position;
+        transform.rotation = Rotation;
+        ServerRotation = Rotation;
+        this.Health = CurrentHealth;
+        this.Max = MaxHealth;
+        HealthDisplay.text = this.Health + "/" + this.Max;
     }
 
-    //Updates the remote plaeyr health bar values
-    public void UpdateHealth(int NewHPValue)
+    public void UpdateHealth(int Health)
     {
-        CurrentHealth = NewHPValue;
-        HealthText.text = CurrentHealth + "/" + MaxHealth;
+        this.Health = Health;
+        HealthDisplay.text = this.Health + "/" + Max;
     }
 
-    //Updates the remote player with new values passed in
-    public void UpdateValues(Vector3 NewPosition, Vector3 NewMovement, Quaternion NewRotation, int CurrentHealth, int MaxHealth)
+    public void UpdatePosition(Vector3 Position)
     {
-        //Set the NewPosition flag if we receieved a new value
-        if (NewPosition != ServerSidePosition)
-            this.NewPosition = true;
+        //Unity and Bepu have reversed Z axis directions, so we flip the Z value here when we recieve it from the server before we update it
+        Vector3 NewPosition = new Vector3(Position.x, Position.y, -Position.z);
+        ServerPosition = NewPosition;
+    }
 
-        //Store all the new values that have been provided
-        ServerSidePosition = NewPosition;
-        ServerSideMovement = NewMovement;
-        ServerSideRotation = NewRotation;
-
-        //Update the text display the characters health
-        this.CurrentHealth = CurrentHealth;
-        this.MaxHealth = MaxHealth;
-        HealthText.text = CurrentHealth + "/" + MaxHealth;
+    public void UpdateRotation(Quaternion Rotation)
+    {
+        ServerRotation = Rotation;
     }
 
     //Uses raycasting to check the distance between the players feet and whatever ground is below them to determine if they are standing or in the air

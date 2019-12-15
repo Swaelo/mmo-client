@@ -38,6 +38,8 @@ public class ConnectionManager : MonoBehaviour
     private float ConnectionTimeout = 10.0f;    //How long to wait for the connection to go through before announcing the servers are probably down
     private bool TimedOut = false;  //Flag set once we have announced that the connection to the server has timed out
 
+    private bool TransmitPackets = true;
+
     void Awake()
     {
         //Assign our singleton class instance
@@ -58,6 +60,12 @@ public class ConnectionManager : MonoBehaviour
 
     void Update()
     {
+        //if(Input.GetKeyDown(KeyCode.H))
+        //{
+        //    TransmitPackets = !TransmitPackets;
+        //    Log.Chat("Packet Transmission " + (TransmitPackets ? "Enabled" : "Disabled"));
+        //}
+
         //Wait for server connection to be established until it times out
         if (TryingToConnect)
             TryConnecting();
@@ -70,7 +78,7 @@ public class ConnectionManager : MonoBehaviour
             //Process instructions sent from the game server
             HandleEvents();
             //Send out any queued packets each timestep that passes
-            PacketQueue.UpdateQueue();
+            PacketQueue.UpdateQueue(TransmitPackets);
         }
     }
 
