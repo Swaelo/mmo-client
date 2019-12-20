@@ -6,3 +6,5 @@ Assets/Scripts/Testing/
 Assets/Scripts/Testing.meta
 Assets/Scenes/Test.unity
 Assets/Scenes/Test.unity.meta
+Assets/Resources/ServerConnectionSettings.xml
+Assets/Resources/ServerConnectionSettings.xml.meta
