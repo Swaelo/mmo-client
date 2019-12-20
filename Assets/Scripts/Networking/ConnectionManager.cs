@@ -5,6 +5,7 @@
 // ================================================================================================================================
 
 using System;
+using System.Xml;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,9 +19,6 @@ public class ConnectionManager : MonoBehaviour
     public PacketQueue PacketQueue = new PacketQueue();
 
     //Server connection status
-    public Boolean UseDebugServer = false;
-    private string ReleaseServerIP = "ws://203.221.43.175:5500";
-    private string DebugServerIP = "ws://203.221.43.175:5501";
     public WebSocket ServerConnection;
     private bool TryingToConnect = false;
 
@@ -60,12 +58,6 @@ public class ConnectionManager : MonoBehaviour
 
     void Update()
     {
-        //if(Input.GetKeyDown(KeyCode.H))
-        //{
-        //    TransmitPackets = !TransmitPackets;
-        //    Log.Chat("Packet Transmission " + (TransmitPackets ? "Enabled" : "Disabled"));
-        //}
-
         //Wait for server connection to be established until it times out
         if (TryingToConnect)
             TryConnecting();
@@ -84,8 +76,23 @@ public class ConnectionManager : MonoBehaviour
 
     private void RegisterWebSocketEvents()
     {
-        //Initialize a new instance of the websocket class passing in whatever IP we are found to be using this time
-        string ServerIP = UseDebugServer ? DebugServerIP : ReleaseServerIP;
+        //Load the settings file from the webserver telling us which server we should be connecting to right now
+        XmlDocument ServerSettingsDocument = new XmlDocument();
+        ServerSettingsDocument.Load("http://swaelo.com/files/ClientServerSettings.xml");
+        string UseTestServer = ServerSettingsDocument.DocumentElement.SelectSingleNode("/root/UseTestServer").InnerText;
+
+        //Load the connection settings file as a text asset, then convert it to an XML document, then read the values from it
+        TextAsset ConnectionsFile = (TextAsset)Resources.Load("ServerConnectionSettings");
+        XmlDocument ConnectionsDocument = new XmlDocument();
+        ConnectionsDocument.LoadXml(ConnectionsFile.text);
+
+        //Load the test and release server IP values from the connection settings resource file
+        string TestServerIP = ConnectionsDocument.DocumentElement.SelectSingleNode("/root/TestServerIP").InnerText;
+        string ReleaseServerIP = ConnectionsDocument.DocumentElement.SelectSingleNode("/root/ReleaseServerIP").InnerText;
+
+        //Select the IP we were set to use based on the settings file stored on the web server
+        string ServerIP = UseTestServer == "0" ? TestServerIP : ReleaseServerIP;
+        Debug.Log("Connecting to '" + ServerIP + "'");
         ServerConnection = WebSocketFactory.CreateInstance(ServerIP);
 
         //Register new connection opened event
