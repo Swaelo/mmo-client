@@ -121,8 +121,9 @@ public class PlayerManagementPacketHandler : MonoBehaviour
         float CameraZoom = GameState.SelectedCharacter.CameraZoom;
         float CameraXRotation = GameState.SelectedCharacter.CameraXRotation;
         float CameraYRotation = GameState.SelectedCharacter.CameraYRotation;
-        GameObject PlayerCamera = PlayerManager.Instance.LocalPlayer.transform.Find("Player Camera").gameObject;
-        PlayerCamera.GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraXRotation, CameraYRotation);
+
+        //Apply the new camera values
+        PlayerManager.Instance.LocalPlayer.GetComponent<LocalPlayerController>().ForceSetCamera(CameraZoom, CameraXRotation, CameraYRotation);
     }
 
     public static NetworkPacket GetValuesRemotePlayerPlayAnimation(NetworkPacket ReadFrom)

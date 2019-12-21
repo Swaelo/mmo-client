@@ -83,8 +83,8 @@ public class PlayerManager : MonoBehaviour
 
         //Re-enable the local player character and set their values to what has been provided
         LocalPlayer.SetActive(true);
-        LocalPlayer.GetComponent<LocalPlayerController>().Respawn(Position, Rotation);
-        LocalPlayer.transform.Find("Player Camera").GetComponent<PlayerCameraController>().SetCamera(CameraZoom, CameraX, CameraY);
+        LocalPlayer.GetComponent<LocalPlayerController>().ForceSetPlayer(Position, Rotation);
+        LocalPlayer.GetComponent<LocalPlayerController>().ForceSetCamera(CameraZoom, CameraX, CameraY);
     }
 
     //Adds some other remote player character back into the game world
