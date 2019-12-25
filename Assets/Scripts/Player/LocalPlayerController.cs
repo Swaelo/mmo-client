@@ -82,17 +82,6 @@ public class LocalPlayerController : MonoBehaviour
     [Header("Cursor Lock Settings")]
     public bool CursorLocked = false;   //Tracks when the cursor is locked to the screen
 
-    [Header("LockedCameraSettingsRange")]
-    public float PanHigh = -25f;
-    public float PanMid = 0f;
-    public float PanLow = 50f;
-    public float ZoomHigh = 2f;
-    public float ZoomMid = 1.5f;
-    public float ZoomLow = 1f;
-    public float ElevHigh = -5f;
-    public float ElevMid = 0f;
-    public float ElevLow = 5f;
-
     public void Awake()
     {
         CameraRotation = CameraTransform.rotation.eulerAngles.y;
@@ -291,13 +280,19 @@ public class LocalPlayerController : MonoBehaviour
         NewCameraValues = false;
     }
 
-    //Helps avoid gimbal lock from the mouse input
-    public float ClampCameraAngle(float Angle, float Minimum, float Maximum)
+    //Limits how far the player can pan the camera up and down so gimbal lock doesnt occur
+    public float PreventGimbalLock(float CameraPan)
     {
-        if (Angle < -360f)
-            Angle += 360f;
-        if (Angle > 360f)
-            Angle -= 360f;
-        return Mathf.Clamp(Angle, Minimum, Maximum);
+        if (CameraPan < -360f)
+            CameraPan += 360f;
+        if (CameraPan > 360f)
+            CameraPan -= 360f;
+        return Mathf.Clamp(CameraPan, CameraPanDownLimit, CameraPanUpLimit);
+    }
+
+    //Limits how far the player can zoom the camera to/from the player
+    public float LimitCameraZoom(float CameraZoom)
+    {
+        return Mathf.Clamp(CameraZoom, CameraCloseZoomLimit, CameraFarZoomLimit);
     }
 }

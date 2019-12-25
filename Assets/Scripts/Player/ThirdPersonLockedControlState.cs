@@ -21,8 +21,6 @@ public class ThirdPersonLockedControlState : State
     {
         //Activate the targetting reticle
         Controller.TargettingReticleObject.SetActive(true);
-
-        ApplyCameraZoomPan();
     }
 
     protected override void OnStateExit()
@@ -69,120 +67,8 @@ public class ThirdPersonLockedControlState : State
             if (!Controller.CursorLocked)
                 return;
 
-            ApplyCameraZoomPan();
+            //ApplyCameraZoomPan();
         }
-    }
-
-    private void ApplyCameraZoomPan()
-    {
-        //Compare the elevation difference between the player and the new target
-        float ElevationDifference = Controller.PlayerEnemyTarget.transform.position.y - Controller.PlayerCameraPivot.transform.position.y;
-
-        //Map this onto the Pan and Zoom ranges to get the new camera values
-        float NewCameraPan = MapToPanRange(ElevationDifference);
-        NewCameraPan = Controller.ClampCameraAngle(NewCameraPan, Controller.CameraPanDownLimit, Controller.CameraPanUpLimit);
-
-        float NewCameraZoom = MapToZoomRange(ElevationDifference);
-
-        //Find the current direction from the player to the target lock
-        Vector3 DirectionPlayerToTarget = (Controller.PlayerCameraPivot.transform.position - Controller.PlayerEnemyTarget.transform.position).normalized;
-        DirectionPlayerToTarget.y = 0f;
-
-        //Move the Camera Dummy around until its exactly where we want the players camera to be
-        Quaternion NewCameraRotation = Quaternion.Euler(NewCameraPan, 0f, 0f);
-        Vector3 NewCameraPosition = Controller.PlayerCameraPivot.transform.position + DirectionPlayerToTarget * NewCameraZoom;
-        Controller.CameraDummy.transform.position = NewCameraPosition;
-
-        //Get the distance between the CameraDummy and the CameraPivot to make sure they arent too close
-        float DummyDistance = Vector3.Distance(Controller.CameraDummy.transform.position, Controller.PlayerCameraPivot.transform.position);
-        Log.Chat(DummyDistance.ToString());
-        //If the dummy is closer than the zoom limit then move it back a bit
-        if(DummyDistance < Controller.CameraCloseZoomLimit)
-        {
-            //Figure out how far we need to move the dummy back so it doesnt get too close to the player
-            float MoveDistance = Controller.CameraCloseZoomLimit - DummyDistance;
-            //Now move it back
-            Vector3 NewDummyPos = Controller.CameraDummy.transform.position - Controller.CameraDummy.transform.forward * MoveDistance;
-            Debug.Log("Moving Dummy back from " + Controller.CameraDummy.transform.position + " to " + NewDummyPos + ", this is a distance of " + Vector3.Distance(Controller.CameraDummy.transform.position, NewDummyPos));
-            Controller.CameraDummy.transform.position = NewDummyPos;
-        }
-
-        
-
-        Controller.CameraDummy.transform.rotation = NewCameraRotation;
-        Controller.CameraDummy.transform.LookAt(Controller.PlayerEnemyTarget.transform.position);
-
-        //Copy the Camera Dummy values on to the players camera
-        Controller.CameraTransform.position = Controller.CameraDummy.transform.position;
-        Controller.CameraTransform.rotation = Controller.CameraDummy.transform.rotation;
-    }
-
-    //Maps the given elevation value onto the CameraPan range
-    private float MapToPanRange(float ElevationDifference)
-    {
-        //Before we start mapping the ElevationDifference onto the other number lines, make sure it stays between the extreme values -5 and 5
-        if (ElevationDifference > 5)
-            ElevationDifference = 5;
-        if (ElevationDifference < -5)
-            ElevationDifference = -5f;
-
-        //X is the value we want to map onto the Camera Pan Value Range
-        float X = ElevationDifference;
-
-        //X value between 0 and 5 maps onto the Mid-Low range
-        if(X >= 0.0f)
-        {
-            //Find N using the Mid-Low elevation ranges
-            float N = FindN(X, Controller.ElevMid, Controller.ElevLow);
-
-            //Now map the N ratio onto the Camera Pan Mid-Low range
-            return FindY(N, Controller.PanMid, Controller.PanLow);
-        }
-        //X Value between -5 and 0 maps onto the High-Mid range
-        else
-        {
-            //Find N using the High-Mid elevation range
-            float N = FindN(X, Controller.ElevHigh, Controller.ElevMid);
-
-            //Now map the N ratio onto the Camrea Pan High-Mid range
-            return FindY(N, Controller.PanHigh, Controller.PanMid);
-        }
-    }
-
-    //Maps the given elevation value onto the CameraZoom range
-    private float MapToZoomRange(float ElevationDifference)
-    {
-        if (ElevationDifference > 5)
-            ElevationDifference = 5;
-        if (ElevationDifference < -5)
-            ElevationDifference = -5f;
-
-        float X = ElevationDifference;
-
-        if(X >= 0.0f)
-        {
-            float N = FindN(X, Controller.ElevMid, Controller.ElevLow);
-
-            return FindY(N, Controller.ZoomMid, Controller.ZoomLow);
-        }
-        else
-        {
-            float N = FindN(X, Controller.ElevHigh, Controller.ElevMid);
-
-            return FindY(N, Controller.ZoomHigh, Controller.ZoomMid);
-        }
-    }
-
-    //Finds the Ratio of X along the range of Xmin-XMax
-    private float FindN(float X, float XMin, float XMax)
-    {
-        return (X - XMin) / (XMax - XMin);
-    }
-
-    //Maps the Ratio N onto the rnage of YMin-YMax
-    private float FindY(float N, float YMin, float YMax)
-    {
-        return N * (YMax - YMin) + YMin;
     }
 
     //Releases the current target lock and returns to the FreeControlState

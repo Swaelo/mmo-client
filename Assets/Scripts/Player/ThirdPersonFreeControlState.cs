@@ -54,38 +54,48 @@ public class ThirdPersonFreeControlState : State
         //Apply new override settings when instructed to by the game server
         if (Controller.NewCameraValues)
             Controller.ForceSetCameraValues();
-        //Otherwise we just process input and update from that
+        //Otherwise process input and update camera location when the cursor is locked
+        else if (Controller.CursorLocked)
+            ApplyFreeCameraMovement();
+    }
+
+    //Applys free camera movement from the uses mouse input
+    private void ApplyFreeCameraMovement()
+    {
+        //Apply users mouse input to update the cameras Rotation/Pan values around the player
+        Controller.CameraRotation += Input.GetAxis("Mouse X") * Controller.CameraRotationSpeed * Controller.MouseDampening;
+        Controller.CameraPan = Controller.PreventGimbalLock(Controller.CameraPan + -Input.GetAxis("Mouse Y") * Controller.CameraPanSpeed * Controller.MouseDampening);
+
+        //Mouse input should also be applied to update the cameras zoom distance, but only while the mouse is not hovered above the chat window
+        if (!ChatWindowCursorTracker.IsMouseOverChat)
+            Controller.CameraZoom = Controller.LimitCameraZoom(Controller.CameraZoom - Input.GetAxis("Mouse ScrollWheel") * Controller.CameraZoomSpeed);
+
+        //Compute a new target position/rotation value for the camera based on these values
+        Quaternion TargetCameraRotation = Quaternion.Euler(Controller.CameraPan, Controller.CameraRotation, 0f);
+        Vector3 TargetCameraPosition = TargetCameraRotation * new Vector3(0f, 0f, -Controller.CameraZoom) + Controller.PlayerCameraPivot.transform.position;
+
+        //Find the vector direction from the camera pivot to the new target position, and the distance between these two points
+        Vector3 DirectionPivotToTarget = (TargetCameraPosition - Controller.PlayerCameraPivot.transform.position).normalized;
+        float DistancePivotToTarget = Vector3.Distance(TargetCameraPosition, Controller.PlayerCameraPivot.transform.position);
+
+        //Get the size of the cameras view frustum in world units, then use those to define the dimensions we will use for our boxcast (width, height, length)
+        float FrustumHeight = 2.0f * 0.3f * Mathf.Tan(Controller.CameraComponent.fieldOfView * 0.5f * Mathf.Deg2Rad);
+        float FrustumWidth = FrustumHeight * Controller.CameraComponent.aspect;
+        Vector3 HalfBoxDimensions = new Vector3(FrustumWidth / 2f, FrustumHeight / 2f, 0.1f);
+
+        //Do a BoxCast from the cameras pivot to the new target location to make sure theres no obstacles prevent the camera from moving there
+        RaycastHit BoxHit;
+        bool HitDetected = Physics.BoxCast(Controller.PlayerCameraPivot.transform.position, HalfBoxDimensions, DirectionPivotToTarget, out BoxHit, Quaternion.LookRotation(TargetCameraPosition - Controller.PlayerCameraPivot.transform.position), DistancePivotToTarget);
+
+        //If no collision with any obstacles was detected we move the camera straight to its target location
+        if (!HitDetected)
+            Controller.CameraComponent.transform.position = TargetCameraPosition;
+        //Otherwise we move it the location where the boxhit detection occured, if its not closer to the player than should be allowed
         else
-        {
-            //Do nothing with the camera if the cursor isnt locked
-            if (!Controller.CursorLocked)
-                return;
+            Controller.CameraComponent.transform.position = Controller.PlayerCameraPivot.transform.position + (TargetCameraPosition - Controller.PlayerCameraPivot.transform.position).normalized * (BoxHit.distance + Controller.CameraComponent.nearClipPlane);
 
-            //Poll input which will be applied onto the camera to adjust the current rotation/pan values
-            float RotationInput = Input.GetAxis("Mouse X") * Controller.CameraRotationSpeed * Controller.MouseDampening;
-            float PanInput = -Input.GetAxis("Mouse Y") * Controller.CameraPanSpeed * Controller.MouseDampening;
-
-            //Apply these values to the cameras current rotation and panning values
-            Controller.CameraRotation += RotationInput;
-            Controller.CameraPan += PanInput;
-            Controller.CameraPan = Controller.ClampCameraAngle(Controller.CameraPan, Controller.CameraPanDownLimit, Controller.CameraPanUpLimit);
-
-            //Zoom the camera
-            if (!ChatWindowCursorTracker.IsMouseOverChat)
-            {
-                float ZoomAdjustment = Input.GetAxis("Mouse ScrollWheel");
-                float NewZoomLevel = Controller.CameraZoom - ZoomAdjustment * Controller.CameraZoomSpeed;
-                Controller.CameraZoom = Mathf.Clamp(NewZoomLevel, Controller.CameraCloseZoomLimit, Controller.CameraFarZoomLimit);
-            }
-        }
-
-        //Compute new target position and rotation values for the camera
-        Quaternion NewCameraRotation = Quaternion.Euler(Controller.CameraPan, Controller.CameraRotation, 0f);
-        Vector3 NewCameraPosition = NewCameraRotation * new Vector3(0f, 0f, -Controller.CameraZoom) + Controller.PlayerCameraPivot.transform.position;
-
-        //Apply the new camera settings
-        Controller.CameraTransform.transform.position = NewCameraPosition;
-        Controller.CameraTransform.transform.rotation = NewCameraRotation;
+        //Apply rotation to the camera
+        Controller.CameraComponent.transform.rotation = TargetCameraRotation;
     }
 
     //Locks onto whatever enemy is available then changed to LockedControlState if able to
