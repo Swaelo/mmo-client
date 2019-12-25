@@ -41,7 +41,7 @@ public class ChatMessageInput : MonoBehaviour
         ChatWindowInput.text = "";
 
         //If the input message is not empty then it should be sent to the game server
-        if(ChatMessage != "")
+        if(ChatMessage != "" && PlayerCommunicationPacketSender.Instance != null)
         {
             PlayerCommunicationPacketSender.Instance.SendChatMessage(ChatMessage);
             //Also display the users message in their own chat log too
