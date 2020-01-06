@@ -30,12 +30,12 @@ public class ThirdPersonFreeControlState : State
 
     protected override void OnStateUpdate()
     {
-        //Clicking middle mouse / tapping Q will lock onto an enemy target if one can be found
-        if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Q))
-            TryTargetLock();
+        ////Clicking middle mouse / tapping Q will lock onto an enemy target if one can be found
+        //if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Q))
+        //    TryTargetLock();
 
         //Get a new movement vector and apply velocity upon it
-        Vector3 MovementVector = ComputeMovementVector();
+        Vector3 MovementVector = ComputeMovementVector(Controller.CursorLocked);
         MovementVector.y += Controller.Velocity;
 
         //Apply new movement and rotation to the player
@@ -51,15 +51,19 @@ public class ThirdPersonFreeControlState : State
 
     protected override void OnStateLateUpdate()
     {
+        //Camera movement is not possible while the cursor is not locked to the screen
+        if (!Controller.CursorLocked)
+            return;
+
         //Apply new override settings when instructed to by the game server
         if (Controller.NewCameraValues)
             Controller.ForceSetCameraValues();
         //Otherwise process input and update camera location when the cursor is locked
-        else if (Controller.CursorLocked)
+        else
             ApplyFreeCameraMovement();
     }
 
-    //Applys free camera movement from the uses mouse input
+    //Applys free camera movement from the users mouse input
     private void ApplyFreeCameraMovement()
     {
         //Apply users mouse input to update the cameras Rotation/Pan values around the player
@@ -144,11 +148,11 @@ public class ThirdPersonFreeControlState : State
     }
 
     //Computes a new movement vector based on the users input and the current camera orientation relative to the player
-    private Vector3 ComputeMovementVector()
+    private Vector3 ComputeMovementVector(bool IsCursorLocked)
     {
-        //Poll X/Y Input axes relative to the camera transform
-        Vector3 MovementX = Vector3.Cross(transform.up, Controller.CameraTransform.forward).normalized;
-        Vector3 MovementY = Vector3.Cross(MovementX, transform.up).normalized;
+        //Create new X and Y movement vectors based on the current direction of the camera relative to the player and the players input (ignored while mouse cursor is not locked to the screen)
+        Vector3 MovementX = IsCursorLocked ? Vector3.Cross(transform.up, Controller.CameraTransform.forward).normalized : Vector3.zero;
+        Vector3 MovementY = IsCursorLocked ? Vector3.Cross(MovementX, transform.up).normalized : Vector3.zero;
 
         //Return a new movement vector calculated using these input axes
         return Input.GetAxis("Horizontal") * MovementX + Input.GetAxis("Vertical") * MovementY;

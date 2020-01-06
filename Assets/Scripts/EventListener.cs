@@ -12,23 +12,12 @@ public class EventListener : MonoBehaviour
 
     public void LockCursor()
     {
-        Log.Chat("cursor locked");
         PlayerController.SetCursorLockState(true);
+        //Cursor.lockState = CursorLockMode.Locked;
     }
 
     public void FreeCursor()
     {
-        Log.Chat("cursor unlocked");
         PlayerController.SetCursorLockState(false);
-    }
-
-    public void EnableFull()
-    {
-        Log.Chat("fullscreen enabled");
-    }
-
-    public void DisableFull()
-    {
-        Log.Chat("fullscreen disabled");
     }
 }

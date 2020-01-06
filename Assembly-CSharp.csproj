@@ -84,6 +84,7 @@
     <Compile Include="Assets\Scripts\Interface\Player\PlayerHealthBar.cs" />
     <Compile Include="Assets\Scripts\Interface\UIButtonFunctions.cs" />
     <Compile Include="Assets\Scripts\Interface\UIServerMessageDisplay.cs" />
+    <Compile Include="Assets\Scripts\LoadedAlertCaller.cs" />
     <Compile Include="Assets\Scripts\Networking\ConnectionManager.cs" />
     <Compile Include="Assets\Scripts\Networking\KickReason.cs" />
     <Compile Include="Assets\Scripts\Networking\NetworkPacket.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="Assets\Scripts\Player\RemotePlayerController.cs" />
     <Compile Include="Assets\Scripts\Player\ThirdPersonFreeControlState.cs" />
     <Compile Include="Assets\Scripts\Player\ThirdPersonLockedControlState.cs" />
+    <Compile Include="Assets\Scripts\Testing\InteractDisplay.cs" />
     <Compile Include="Assets\Scripts\Testing\ObjectMover.cs" />
     <Compile Include="Assets\Scripts\VisibilityTracker.cs" />
     <None Include="Assets\Resources\ServerConnectionSettings.xml" />

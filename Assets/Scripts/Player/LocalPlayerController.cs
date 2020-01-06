@@ -33,6 +33,7 @@ public class LocalPlayerController : MonoBehaviour
     public float MaxTargetRange = 5.0f;         //The maximum distance enemies can be from the player and still be picked up as a new target when trying to lock onto something
     public GameObject PlayerCameraPivot;        //The players camera pivots around this object, placed roughly at the players head (instead of just pivoting around the actual player, which would place the camera at feet level)
     public GameObject PlayerEnemyTarget = null; //The players current enemy target lock
+    public GameObject LockedCameraOffset;       //Defines where the camera should be placed when the camera is locked onto an enemy
 
     [Header("Camera Mouse Sensitivity Settings")]
     public float CameraRotationSpeed = 50f;     //How fast the camera rotates around the player while moving the mouse from side to side
