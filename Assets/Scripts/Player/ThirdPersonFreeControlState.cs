@@ -30,9 +30,9 @@ public class ThirdPersonFreeControlState : State
 
     protected override void OnStateUpdate()
     {
-        ////Clicking middle mouse / tapping Q will lock onto an enemy target if one can be found
-        //if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Q))
-        //    TryTargetLock();
+        //Clicking middle mouse / tapping Q will lock onto an enemy target if one can be found
+        if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Q))
+            TryTargetLock();
 
         //Get a new movement vector and apply velocity upon it
         Vector3 MovementVector = ComputeMovementVector(Controller.CursorLocked);
@@ -41,7 +41,7 @@ public class ThirdPersonFreeControlState : State
         //Apply new movement and rotation to the player
         Controller.Controller.Move(MovementVector * Controller.MoveSpeed * Time.deltaTime);
         if (MovementVector.x != 0f || MovementVector.z != 0f)
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, ComputeMovementRotation(MovementVector), Controller.TurnSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, ComputeMovementRotation(MovementVector), Controller.ThirdPersonTurnSpeed * Time.deltaTime);
     }
 
     protected override void OnStateFixedUpdate()
@@ -72,7 +72,22 @@ public class ThirdPersonFreeControlState : State
 
         //Mouse input should also be applied to update the cameras zoom distance, but only while the mouse is not hovered above the chat window
         if (!ChatWindowCursorTracker.IsMouseOverChat)
-            Controller.CameraZoom = Controller.LimitCameraZoom(Controller.CameraZoom - Input.GetAxis("Mouse ScrollWheel") * Controller.CameraZoomSpeed);
+        {
+            //Calculate a new camera zoom level based on how much the user scrolls the mouse wheel
+            float NewCameraZoom = Controller.CameraZoom - Input.GetAxis("Mouse ScrollWheel") * Controller.CameraZoomSpeed;
+
+            //If the new zoom value is in further than the close limit then transition to the first person view control state
+            if (NewCameraZoom < Controller.CameraCloseZoomLimit)
+            {
+                //Transition to first person view and exit this function
+                Controller.CameraZoom = Controller.CameraCloseZoomLimit;
+                Controller.StateMachine.SetState(GetComponent<FirstPersonControlState>());
+                return;
+            }
+            //Otherwise we apply the new zoom level to the third person camera
+            else
+                Controller.CameraZoom = Controller.LimitCameraZoom(NewCameraZoom);
+        }
 
         //Compute a new target position/rotation value for the camera based on these values
         Quaternion TargetCameraRotation = Quaternion.Euler(Controller.CameraPan, Controller.CameraRotation, 0f);

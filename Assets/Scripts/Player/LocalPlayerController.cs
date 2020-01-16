@@ -14,10 +14,17 @@ public class LocalPlayerController : MonoBehaviour
     public CharacterController Controller;  //Reference to the players CharacterController component, movement vectors are applied to this to move the character around the scene
     public Animator Animator;               //Reference to the character Animator component, values such as distance travelled are passed on so it knows when to transition between animation states
 
-    [Header("Player Movement Settings")]
+    [Header("Third Person Player Movement Settings")]
     public float MoveSpeed = 8f;    //How fast the player character can move
-    public float TurnSpeed = 300f;  //How fast the player character can turn around
     public float FallSpeed = 8f;    //How much gravity is applied to the character while in the air
+    public float ThirdPersonTurnSpeed = 300f;   //How fast the player character can turn around while in third person mode
+
+    [Header("First Person Player Movement Settings")]
+    public float FirstPersonTurnSpeed = 25f;    //How fast the player character can turn around while in first person mode
+    public float FirstPersonTiltSpeed = 125f;   //How fast the players camera tilts up and down in first person mode
+    public float FirstPersonCameraTilt = 0f;    //Current tilt value of the camera in first person mode
+    public float FirstPersonMinCameraTilt = -25f;   //Minimum FPS camera tilt value
+    public float FirstPersonMaxCameraTilt = 80f;    //Maximum FPS camera tilt value
 
     [Header("Player Jump Settings")]
     public bool IsGrounded;             //Tracks when the player is on the ground or in the air
@@ -27,6 +34,7 @@ public class LocalPlayerController : MonoBehaviour
 
     [Header("Camera Targetting Settings")]
     public GameObject CameraDummy;              //Moved around the scene, then faced towards the current player target to figure out what the player cameras rotation should be while in the LockedControlState
+    public GameObject FPSCameraPivot;           //GameObject where camera is placed while in first person view mode
     public GameObject TargettingReticleObject;  //GameObject Reference containing the TargettingReticle UI sprite to indicate which target the player is currently locked onto
     public RectTransform CanvasRect;            //The RectTransform component of the UI Canvas
     public RectTransform TargettingReticleRect; //The RectTransform component of the TargettingReticle object which is modified so the reticle remains above the current target lock
